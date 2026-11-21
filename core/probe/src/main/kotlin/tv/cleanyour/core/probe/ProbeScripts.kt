@@ -94,6 +94,12 @@ object ProbeScripts {
 
     fun fileSha256(path: RemotePath) = ShellLine("sha256sum ${q(path.absolute)}")
 
+    // Read-only size of base and split APK files for one package. The paths remain on the TV.
+    fun installedAppApkSizes(pkg: PackageName): ShellLine {
+        require(PACKAGE_RE.matches(pkg.value))
+        return ShellLine("for p in \$(pm path ${q(pkg.value)} 2>/dev/null); do f=\${p#package:}; stat -c %s \"\$f\" 2>/dev/null; done")
+    }
+
     // The installed APK's own hash: the path never leaves the TV, so no TV output is ever quoted back.
     fun installedSha256(pkg: PackageName): ShellLine {
         require(PACKAGE_RE.matches(pkg.value))
