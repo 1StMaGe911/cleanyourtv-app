@@ -39,7 +39,7 @@ $pingExit
 
     @Test fun warnsAboutLowMemoryStorageAndHeat() {
         val result = DeviceHealthParser.parse(sample(availableKb = 100_000, freeStorageKb = 100_000, temperature = "91000", pingExit = 1))
-        assertTrue(result.score < 60)
+        assertTrue((result.score ?: 100) < 60)
         assertTrue(result.warnings.contains("Low available memory"))
         assertTrue(result.warnings.contains("Low free storage"))
         assertTrue(result.warnings.contains("High reported temperature"))
