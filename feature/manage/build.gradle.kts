@@ -9,3 +9,10 @@ plugins {
 dependencies {
     testImplementation(project(":testing:fixtures"))
 }
+
+// Russian localization is intentionally incremental; keep other Android Lint checks enabled.
+android {
+    lint {
+        disable += "MissingTranslation"
+    }
+}
