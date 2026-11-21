@@ -96,7 +96,7 @@ object ProbeScripts {
 
     // Read-only size of base and split APK files for one package. The paths remain on the TV.
     fun installedAppApkSizes(pkg: PackageName): ShellLine {
-        require(PACKAGE_RE.matches(pkg.value))
+        require(pkg.value == "android" || PACKAGE_RE.matches(pkg.value))
         return ShellLine("for p in \$(pm path ${q(pkg.value)} 2>/dev/null); do f=\${p#package:}; stat -c %s \"\$f\" 2>/dev/null; done")
     }
 
