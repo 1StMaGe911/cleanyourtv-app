@@ -23,7 +23,7 @@ object NetworkDiagnosticsParser {
         val sections = linkedMapOf("" to mutableListOf<String>())
         var current = ""
         for (raw in stdout.lineSequence()) {
-            val line = raw.trimEnd('\\r')
+            val line = raw.trimEnd('\r')
             if (line.startsWith(MARK)) {
                 val name = line.removePrefix(MARK)
                 if (name !in setOf("route", "ping", "dns") || name in sections) {
@@ -44,7 +44,7 @@ object NetworkDiagnosticsParser {
             else -> null
         }
 
-        val pingText = sections.getValue("ping").joinToString("\\n")
+        val pingText = sections.getValue("ping").joinToString("\n")
         val lossPercent = loss.find(pingText)?.groupValues?.get(1)?.toIntOrNull()?.takeIf { it in 0..100 }
         val avg = latency.find(pingText)?.groupValues?.get(1)?.toDoubleOrNull()?.takeIf { it.isFinite() && it >= 0.0 }
         val pingExit = sections.getValue("ping").lastOrNull { it.startsWith("__cyt_ping_exit__=") }
@@ -56,7 +56,7 @@ object NetworkDiagnosticsParser {
             else -> null
         }
 
-        val dnsText = sections.getValue("dns").joinToString("\\n")
+        val dnsText = sections.getValue("dns").joinToString("\n")
         val dnsResolved = when {
             Regex("(?i)unknown host|bad address|name or service not known|temporary failure in name resolution").containsMatchIn(dnsText) -> false
             Regex("(?i)PING\\s+example\\.com\\s+\\(").containsMatchIn(dnsText) -> true
