@@ -10,7 +10,7 @@ SETTINGS	settings list secure; echo '@@cyt@@ global'; settings list global
 HOME_FOCUS	dumpsys activity activities | grep -E 'ResumedActivity'
 BOOT_ID	cat /proc/sys/kernel/random/boot_id
 FREE_DATA	df -k /data
-DEVICE_HEALTH	echo '@@cyt@@ meminfo'; cat /proc/meminfo; echo '@@cyt@@ storage'; df -k /data; echo '@@cyt@@ cpu'; cat /proc/loadavg; echo '@@cyt@@ thermal'; for f in /sys/class/thermal/thermal_zone*/temp; do [ -r "$f" ] && cat "$f"; done; echo '@@cyt@@ network'; ip route 2>/dev/null | grep -m 1 '^default '; ping -c 1 -W 2 1.1.1.1 >/dev/null 2>&1; echo $?
+DEVICE_HEALTH	echo '@@cyt@@ meminfo'; cat /proc/meminfo; echo '@@cyt@@ storage'; df -k /data; echo '@@cyt@@ cpu'; cat /proc/loadavg; echo '@@cyt@@ thermal'; for f in /sys/class/thermal/thermal_zone*/temp; do [ -r "$f" ] && cat "$f"; done; echo '@@cyt@@ network'; ip route 2>/dev/null | grep -m 1 '^default ' || echo '__cyt_no_default_route__'; ping -c 1 -W 2 1.1.1.1 >/dev/null 2>&1; echo $?
 SCREENSHOT	mkdir -p /data/local/tmp/cleanyourtv && screencap -p /data/local/tmp/cleanyourtv/probe-screen.png
 SCREENSHOT_CLEANUP	rm -f /data/local/tmp/cleanyourtv/probe-screen.png
 MKDIR_TMP	mkdir -p /data/local/tmp/cleanyourtv
