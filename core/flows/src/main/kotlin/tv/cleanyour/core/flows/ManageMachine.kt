@@ -66,6 +66,9 @@ data class ManageState(
     val loading: Boolean = true,
     val addOns: Boolean = true,       // STORES-PLAN 1: the "Cards and modules" row (off in the Play build)
     val switchingHome: Boolean = false,   // 0.4.6: the wizard Home row's "Switch it back on" is running
+    val healthLoading: Boolean = false,
+    val health: tv.cleanyour.core.probe.DeviceHealth? = null,
+    val healthError: Boolean = false,
 ) {
     val current: TvCard? get() = cards.firstOrNull { it.id == selected } ?: cards.firstOrNull()
 }
@@ -92,6 +95,7 @@ sealed interface ManageIntent {
     // 0.4.8 (PLAN item 4): Manage is on screen (the app came back, or a page above it closed) or left it.
     data object Resumed : ManageIntent
     data object Paused : ManageIntent
+    data object CheckHealth : ManageIntent
 }
 
 class ManageMachine(
@@ -107,6 +111,9 @@ class ManageMachine(
     private data class WizardHomeRead(val tvId: TvId, val applies: Boolean, val stockBack: Boolean = false)
     private data class SwitchingHome(val on: Boolean)
     private data class RestartsRead(val tvId: TvId, val tally: RestartTally)
+    private data object HealthLoading
+    private data class HealthLoaded(val health: tv.cleanyour.core.probe.DeviceHealth)
+    private data object HealthFailed
     // 0.4.6: what the last connect read of each TV's Home said (WizardHome), for the cards.
     private val wizardHomes = java.util.concurrent.ConcurrentHashMap<TvId, Boolean>()
     // 0.4.8 (PLAN item 4): while Manage is on screen it keeps one hold on the shown TV's session, so the socket does not
@@ -287,6 +294,9 @@ class ManageMachine(
         Reconnecting -> state.copy(reconnecting = true)
         is WizardHomeRead -> state.copy(cards = state.cards.map { if (it.id == event.tvId) it.copy(wizardHome = event.applies, stockHomeBack = event.stockBack) else it })
         is SwitchingHome -> state.copy(switchingHome = event.on)
+        HealthLoading -> state.copy(healthLoading = true, healthError = false)
+        is HealthLoaded -> state.copy(healthLoading = false, health = event.health, healthError = false)
+        HealthFailed -> state.copy(healthLoading = false, healthError = true)
         is RestartsRead -> state.copy(cards = state.cards.map { if (it.id == event.tvId) it.copy(restarts = event.tally) else it })
         is Reconnected -> state.copy(reconnecting = false, offline = !event.ok && state.offline)
         else -> state
@@ -300,6 +310,7 @@ class ManageMachine(
             ManageIntent.Paused -> { visible = false; autoJob?.cancel(); releaseHold() }
             is ManageIntent.Select -> scope.launch { connected() }
             ManageIntent.RefreshThumbnail -> scope.launch { thumbnail() }
+            ManageIntent.CheckHealth -> if (id != null && !before.healthLoading) scope.launch { checkHealth(id) }
             ManageIntent.Reconnect -> if (id != null && !after.reconnecting) scope.launch {
                 send(Reconnecting)
                 val ok = d.access.session(id) is AccessResult.Ok
@@ -318,6 +329,23 @@ class ManageMachine(
                 effect(ManageEffect.Navigate(IssueRoute.of(it, ReportContext("Manage", ReportContext.named(event.title, after.current?.name), ItWorked.RESTART_FAILED))))
             }
             else -> {}
+        }
+    }
+
+    // A health sample is read-only and scoped to the currently selected live TV session.
+    private suspend fun checkHealth(id: TvId) {
+        send(HealthLoading)
+        val session = d.access.live(id)
+        if (session == null) {
+            send(HealthFailed)
+            return
+        }
+        try {
+            send(HealthLoaded(d.healthReader.read(session)))
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            send(HealthFailed)
         }
     }
 
