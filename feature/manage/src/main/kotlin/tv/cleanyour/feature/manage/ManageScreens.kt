@@ -167,8 +167,10 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                     if (inventory.receivers.isEmpty()) {
                         Body(stringResource(R.string.manage_startup_empty), Modifier.padding(top = 4.dp))
                     } else {
+                        val lockedLabel = stringResource(R.string.manage_startup_locked)
+                        val bootLabel = stringResource(R.string.manage_startup_boot)
                         Body(inventory.receivers.joinToString("\n") { receiver ->
-                            "${receiver.packageName} · ${if (receiver.lockedBoot) stringResource(R.string.manage_startup_locked) else stringResource(R.string.manage_startup_boot)}\n${receiver.component}"
+                            "${receiver.packageName} · ${if (receiver.lockedBoot) lockedLabel else bootLabel}\n${receiver.component}"
                         }, Modifier.padding(top = 4.dp))
                     }
                 }
