@@ -144,8 +144,8 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                 if (state.healthError) Banner(stringResource(R.string.manage_health_error), BannerTone.WARNING, Modifier.padding(top = 12.dp))
                 state.health?.let { health ->
                     SectionLabel(stringResource(R.string.manage_health_title))
-                    val ram = if (health.totalRamMb != null && health.availableRamMb != null) msg(R.string.manage_health_memory_value, "available" to health.availableRamMb, "total" to health.totalRamMb) else stringResource(R.string.manage_health_not_reported)
-                    val storage = if (health.totalStorageMb != null && health.availableStorageMb != null) msg(R.string.manage_health_storage_value, "available" to health.availableStorageMb, "total" to health.totalStorageMb) else stringResource(R.string.manage_health_not_reported)
+                    val ram = if (health.totalRamMb != null && health.availableRamMb != null) msg(R.string.manage_health_memory_value, "available" to health.availableRamMb.toString(), "total" to health.totalRamMb.toString()) else stringResource(R.string.manage_health_not_reported)
+                    val storage = if (health.totalStorageMb != null && health.availableStorageMb != null) msg(R.string.manage_health_storage_value, "available" to health.availableStorageMb.toString(), "total" to health.totalStorageMb.toString()) else stringResource(R.string.manage_health_not_reported)
                     val load = health.cpuLoadAverage?.let { "%.2f".format(java.util.Locale.ROOT, it) } ?: stringResource(R.string.manage_health_not_reported)
                     val temperature = health.temperatureCelsius?.let { "%.1f °C".format(java.util.Locale.ROOT, it) } ?: stringResource(R.string.manage_health_not_reported)
                     val route = when (health.hasDefaultRoute) { true -> stringResource(R.string.manage_health_available); false -> stringResource(R.string.manage_health_missing); null -> stringResource(R.string.manage_health_unknown) }
