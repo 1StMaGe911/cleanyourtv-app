@@ -66,7 +66,7 @@ object DeviceHealthParser {
         }
         val temperature = temps.maxOrNull()
         val networkLines = sections.getValue("network").map(String::trim).filter(String::isNotEmpty)
-        val route = networkLines.firstOrNull()?.startsWith("default ") == true
+        val route = when (networkLines.firstOrNull()) {\n            null -> null\n            "__cyt_no_default_route__" -> false\n            else -> networkLines.first().startsWith("default ").takeIf { networkLines.first().startsWith("default ") }\n        }
         val ping = networkLines.lastOrNull()?.takeIf { it == "0" || it == "1" }?.toIntOrNull()?.let { it == 0 }
 
         val warnings = buildList {
