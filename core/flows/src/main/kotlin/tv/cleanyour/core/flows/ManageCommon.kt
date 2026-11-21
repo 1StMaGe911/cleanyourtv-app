@@ -25,6 +25,7 @@ import tv.cleanyour.core.ops.ConfigTransport
 import tv.cleanyour.core.probe.Prober
 import tv.cleanyour.core.probe.AdbDeviceHealthReader
 import tv.cleanyour.core.probe.AdbNetworkDiagnosticsReader
+import tv.cleanyour.core.probe.AdbStartupReceiverReader
 import tv.cleanyour.core.probe.AdbInstalledAppSizeReader
 import tv.cleanyour.core.probe.AdbInstalledAppLastUsedReader
 import tv.cleanyour.core.registry.ArtifactFetcher
@@ -94,6 +95,7 @@ class ManageDeps(
     val prober: Prober,
     val healthReader: AdbDeviceHealthReader = AdbDeviceHealthReader(),
     val networkDiagnosticsReader: AdbNetworkDiagnosticsReader = AdbNetworkDiagnosticsReader(),
+    val startupReceiverReader: AdbStartupReceiverReader = AdbStartupReceiverReader(),
     val profiles: ProfileSource,
     val facts: FactsTable,
     val snapshots: SnapshotStore,

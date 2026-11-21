@@ -76,6 +76,9 @@ data class ManageState(
     val networkDiagnosticsLoading: Boolean = false,
     val networkDiagnostics: tv.cleanyour.core.probe.NetworkDiagnostics? = null,
     val networkDiagnosticsError: Boolean = false,
+    val startupReceiversLoading: Boolean = false,
+    val startupReceivers: tv.cleanyour.core.probe.StartupReceiverInventory? = null,
+    val startupReceiversError: Boolean = false,
     val installedApps: List<InstalledAppRow> = emptyList(),
     val inventoryLoaded: Boolean = false,
     val appSizePackage: String? = null,
@@ -114,6 +117,7 @@ sealed interface ManageIntent {
     data object Paused : ManageIntent
     data object CheckHealth : ManageIntent
     data object CheckNetworkDiagnostics : ManageIntent
+    data object CheckStartupReceivers : ManageIntent
     data class ReadAppSize(val packageName: String) : ManageIntent
     data class ReadAppLastUsed(val packageName: String) : ManageIntent
 }
@@ -138,6 +142,9 @@ class ManageMachine(
     private data object NetworkDiagnosticsLoading
     private data class NetworkDiagnosticsLoaded(val tvId: TvId, val diagnostics: tv.cleanyour.core.probe.NetworkDiagnostics)
     private data class NetworkDiagnosticsFailed(val tvId: TvId)
+    private data object StartupReceiversLoading
+    private data class StartupReceiversLoaded(val tvId: TvId, val inventory: tv.cleanyour.core.probe.StartupReceiverInventory)
+    private data class StartupReceiversFailed(val tvId: TvId)
     private data class AppSizeLoading(val packageName: String)
     private data class AppSizeLoaded(val tvId: TvId, val packageName: String, val bytes: Long?)
     private data class AppSizeFailed(val tvId: TvId, val packageName: String)
@@ -320,7 +327,7 @@ class ManageMachine(
             state.copy(cards = event.cards, selected = selected, loading = false,
                 offline = cur != null && cur.debugging == DebugState.ON && cur.chip == ChipState.OFFLINE)
         }
-        is ManageIntent.Select -> state.copy(selected = event.tvId, healthLoading = false, health = null, healthError = false, networkDiagnosticsLoading = false, networkDiagnostics = null, networkDiagnosticsError = false, installedApps = emptyList(), inventoryLoaded = false, appSizePackage = null, appSizeBytes = null, appSizeLoading = false, appSizeError = false, appLastUsedPackage = null, appLastUsedAtMs = null, appLastUsedLoading = false, appLastUsedError = false)
+        is ManageIntent.Select -> state.copy(selected = event.tvId, healthLoading = false, health = null, healthError = false, networkDiagnosticsLoading = false, networkDiagnostics = null, networkDiagnosticsError = false, startupReceiversLoading = false, startupReceivers = null, startupReceiversError = false, installedApps = emptyList(), inventoryLoaded = false, appSizePackage = null, appSizeBytes = null, appSizeLoading = false, appSizeError = false, appLastUsedPackage = null, appLastUsedAtMs = null, appLastUsedLoading = false, appLastUsedError = false)
         is InventoryLoaded -> if (state.current?.id == event.tvId) state.copy(installedApps = event.apps, inventoryLoaded = true) else state
         is Thumb -> state.copy(cards = state.cards.map { if (it.id == event.tvId && event.png != null) it.copy(thumbnail = event.png) else it })
         Reconnecting -> state.copy(reconnecting = true)
@@ -332,6 +339,9 @@ class ManageMachine(
         NetworkDiagnosticsLoading -> state.copy(networkDiagnosticsLoading = true, networkDiagnosticsError = false)
         is NetworkDiagnosticsLoaded -> if (state.current?.id == event.tvId) state.copy(networkDiagnosticsLoading = false, networkDiagnostics = event.diagnostics, networkDiagnosticsError = false) else state
         is NetworkDiagnosticsFailed -> if (state.current?.id == event.tvId) state.copy(networkDiagnosticsLoading = false, networkDiagnosticsError = true) else state
+        StartupReceiversLoading -> state.copy(startupReceiversLoading = true, startupReceiversError = false)
+        is StartupReceiversLoaded -> if (state.current?.id == event.tvId) state.copy(startupReceiversLoading = false, startupReceivers = event.inventory, startupReceiversError = false) else state
+        is StartupReceiversFailed -> if (state.current?.id == event.tvId) state.copy(startupReceiversLoading = false, startupReceiversError = true) else state
         is AppSizeLoading -> state.copy(appSizePackage = event.packageName, appSizeBytes = null, appSizeLoading = true, appSizeError = false)
         is AppSizeLoaded -> if (state.current?.id == event.tvId && state.appSizePackage == event.packageName) state.copy(appSizeLoading = false, appSizeBytes = event.bytes, appSizeError = event.bytes == null) else state
         is AppSizeFailed -> if (state.current?.id == event.tvId && state.appSizePackage == event.packageName) state.copy(appSizeLoading = false, appSizeError = true) else state
@@ -356,6 +366,7 @@ class ManageMachine(
             ManageIntent.RefreshThumbnail -> scope.launch { thumbnail() }
             ManageIntent.CheckHealth -> if (id != null && !before.healthLoading) scope.launch { checkHealth(id) }
             ManageIntent.CheckNetworkDiagnostics -> if (id != null && !before.networkDiagnosticsLoading) scope.launch { checkNetworkDiagnostics(id) }
+            ManageIntent.CheckStartupReceivers -> if (id != null && !before.startupReceiversLoading) scope.launch { checkStartupReceivers(id) }
             is ManageIntent.ReadAppSize -> if (id != null) scope.launch { readAppSize(id, event.packageName) }
             is ManageIntent.ReadAppLastUsed -> if (id != null) scope.launch { readAppLastUsed(id, event.packageName) }
             ManageIntent.Reconnect -> if (id != null && !after.reconnecting) scope.launch {
@@ -417,6 +428,23 @@ class ManageMachine(
             throw cancelled
         } catch (_: Exception) {
             send(NetworkDiagnosticsFailed(id))
+        }
+    }
+
+    // Read-only inventory of boot broadcast receivers; it never enables or disables a package.
+    private suspend fun checkStartupReceivers(id: TvId) {
+        send(StartupReceiversLoading)
+        val session = d.access.live(id)
+        if (session == null) {
+            send(StartupReceiversFailed(id))
+            return
+        }
+        try {
+            send(StartupReceiversLoaded(id, d.startupReceiverReader.read(session)))
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            send(StartupReceiversFailed(id))
         }
     }
 

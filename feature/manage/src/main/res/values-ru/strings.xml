@@ -68,4 +68,15 @@
     <string name="manage_network_dns_failed">Ошибка DNS-запроса</string>
     <string name="manage_network_ping_failed">Ping не прошёл</string>
     <string name="manage_network_caveat">Некоторые сети блокируют ping. Ошибка проверки не обязательно означает отсутствие интернета.</string>
+    <string name="manage_startup_check">Проверить автозапуск</string>
+    <string name="manage_startup_reading">Читаем список автозапуска…</string>
+    <string name="manage_startup_error">Не удалось прочитать список автозапуска. Проверьте подключение к ТВ и повторите попытку.</string>
+    <string name="manage_startup_title">Компоненты автозапуска</string>
+    <string name="manage_startup_boot_support">Запуск после загрузки: {value}</string>
+    <string name="manage_startup_locked_support">Запуск до разблокировки: {value}</string>
+    <string name="manage_startup_unsupported">Не поддерживается</string>
+    <string name="manage_startup_unknown">Неизвестно</string>
+    <string name="manage_startup_empty">Список пуст. Это не доказывает, что приложения не запускаются автоматически.</string>
+    <string name="manage_startup_boot">После загрузки</string>
+    <string name="manage_startup_locked">До разблокировки</string>
 </resources>

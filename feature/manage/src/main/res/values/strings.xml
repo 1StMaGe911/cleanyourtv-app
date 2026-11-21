@@ -359,4 +359,15 @@
     <string name="manage_network_dns_failed">DNS lookup failed</string>
     <string name="manage_network_ping_failed">Ping failed</string>
     <string name="manage_network_caveat">Ping tests can be blocked by some networks; failure does not necessarily mean the internet is unavailable.</string>
+    <string name="manage_startup_check">Check startup apps</string>
+    <string name="manage_startup_reading">Reading startup receivers…</string>
+    <string name="manage_startup_error">Could not read startup receivers. Check the TV connection and try again.</string>
+    <string name="manage_startup_title">Startup receivers</string>
+    <string name="manage_startup_boot_support">Boot completed query: {value}</string>
+    <string name="manage_startup_locked_support">Locked boot query: {value}</string>
+    <string name="manage_startup_unsupported">Unsupported</string>
+    <string name="manage_startup_unknown">Unknown</string>
+    <string name="manage_startup_empty">No receiver entries were returned. This does not prove that no apps start automatically.</string>
+    <string name="manage_startup_boot">After boot</string>
+    <string name="manage_startup_locked">Before unlock</string>
 </resources>

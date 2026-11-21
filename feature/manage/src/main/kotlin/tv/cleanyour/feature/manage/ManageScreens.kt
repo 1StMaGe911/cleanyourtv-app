@@ -145,6 +145,33 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                 SecondaryButton(stringResource(R.string.manage_network_check), { onIntent(ManageIntent.CheckNetworkDiagnostics) }, Modifier.padding(top = 8.dp))
                 if (state.networkDiagnosticsLoading) LiveLine(stringResource(R.string.manage_network_reading))
                 if (state.networkDiagnosticsError) Banner(stringResource(R.string.manage_network_error), BannerTone.WARNING, Modifier.padding(top = 8.dp))
+                SecondaryButton(stringResource(R.string.manage_startup_check), { onIntent(ManageIntent.CheckStartupReceivers) }, Modifier.padding(top = 8.dp))
+                if (state.startupReceiversLoading) LiveLine(stringResource(R.string.manage_startup_reading))
+                if (state.startupReceiversError) Banner(stringResource(R.string.manage_startup_error), BannerTone.WARNING, Modifier.padding(top = 8.dp))
+                state.startupReceivers?.let { inventory ->
+                    SectionLabel(stringResource(R.string.manage_startup_title))
+                    val bootSupport = when (inventory.bootQuerySupported) {
+                        true -> stringResource(R.string.manage_health_available)
+                        false -> stringResource(R.string.manage_startup_unsupported)
+                        null -> stringResource(R.string.manage_startup_unknown)
+                    }
+                    val lockedSupport = when (inventory.lockedBootQuerySupported) {
+                        true -> stringResource(R.string.manage_health_available)
+                        false -> stringResource(R.string.manage_startup_unsupported)
+                        null -> stringResource(R.string.manage_startup_unknown)
+                    }
+                    Body(listOf(
+                        msg(R.string.manage_startup_boot_support, "value" to bootSupport),
+                        msg(R.string.manage_startup_locked_support, "value" to lockedSupport),
+                    ).joinToString("\n"), Modifier.padding(top = 4.dp))
+                    if (inventory.receivers.isEmpty()) {
+                        Body(stringResource(R.string.manage_startup_empty), Modifier.padding(top = 4.dp))
+                    } else {
+                        Body(inventory.receivers.joinToString("\n") { receiver ->
+                            "${receiver.packageName} · ${if (receiver.lockedBoot) stringResource(R.string.manage_startup_locked) else stringResource(R.string.manage_startup_boot)}\n${receiver.component}"
+                        }, Modifier.padding(top = 4.dp))
+                    }
+                }
                 state.networkDiagnostics?.let { network ->
                     val route = when (network.hasDefaultRoute) { true -> stringResource(R.string.manage_health_available); false -> stringResource(R.string.manage_health_missing); null -> stringResource(R.string.manage_health_unknown) }
                     val dns = when (network.dnsResolved) { true -> stringResource(R.string.manage_health_reachable); false -> stringResource(R.string.manage_network_dns_failed); null -> stringResource(R.string.manage_health_unknown) }
