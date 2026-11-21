@@ -253,7 +253,9 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                     }
                 }
                 }
-            }(top = 16.dp)) {
+            }
+
+            ListGroup(Modifier.padding(top = 16.dp)) {
                 // 0.3.3 D2: without the new home screen there is no dock to name; the row opens the reason.
                 // 0.4.7 (UX finding 8): installed but not in use says the TV's own is in use; and when the
                 // TV turned its own back on behind this app (StockHomeBack), the row says that.
