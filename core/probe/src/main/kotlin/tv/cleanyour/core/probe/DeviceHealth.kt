@@ -14,7 +14,7 @@ data class DeviceHealth(
     val temperatureCelsius: Double?,
     val hasDefaultRoute: Boolean?,
     val internetReachable: Boolean?,
-    val score: Int,
+    val score: Int?,
     val warnings: List<String>,
 )
 
@@ -86,7 +86,8 @@ object DeviceHealthParser {
         }
         if (temperature != null && temperature >= 85.0) score -= 25 else if (temperature != null && temperature >= 75.0) score -= 10
         if (ping == false) score -= 10
-        return DeviceHealth(totalRam, availableRam, storage?.get(0), storage?.get(2), load, temperature, route, ping, score.coerceIn(0, 100), warnings)
+        val hasScorableData = (totalRam != null && availableRam != null) || storage != null || temperature != null || ping != null
+        return DeviceHealth(totalRam, availableRam, storage?.get(0), storage?.get(2), load, temperature, route, ping, if (hasScorableData) score.coerceIn(0, 100) else null, warnings)
     }
 }
 
