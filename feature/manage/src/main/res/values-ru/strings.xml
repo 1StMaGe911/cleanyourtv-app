@@ -57,4 +57,15 @@
     <string name="manage_health_warning_low_storage">Мало свободного места</string>
     <string name="manage_health_warning_high_temperature">Повышенная температура по данным телевизора</string>
     <string name="manage_health_warning_no_internet">Проверка доступа в интернет не пройдена</string>
+    <string name="manage_network_check">Проверить сеть телевизора</string>
+    <string name="manage_network_reading">Проверяем сеть телевизора…</string>
+    <string name="manage_network_error">Не удалось получить диагностику сети. Проверьте подключение ADB и повторите попытку.</string>
+    <string name="manage_network_title">Диагностика сети</string>
+    <string name="manage_network_dns">Разрешение DNS: {value}</string>
+    <string name="manage_network_ping">Проверка ICMP: {value}</string>
+    <string name="manage_network_loss">Потеря пакетов: {value}</string>
+    <string name="manage_network_latency">Средний ping: {value}</string>
+    <string name="manage_network_dns_failed">Ошибка DNS-запроса</string>
+    <string name="manage_network_ping_failed">Ping не прошёл</string>
+    <string name="manage_network_caveat">Некоторые сети блокируют ping. Ошибка проверки не обязательно означает отсутствие интернета.</string>
 </resources>

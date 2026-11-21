@@ -142,6 +142,25 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                 SecondaryButton(stringResource(R.string.manage_health_check), { onIntent(ManageIntent.CheckHealth) }, Modifier.padding(top = 8.dp))
                 if (state.healthLoading) LiveLine(stringResource(R.string.manage_health_reading))
                 if (state.healthError) Banner(stringResource(R.string.manage_health_error), BannerTone.WARNING, Modifier.padding(top = 12.dp))
+                SecondaryButton(stringResource(R.string.manage_network_check), { onIntent(ManageIntent.CheckNetworkDiagnostics) }, Modifier.padding(top = 8.dp))
+                if (state.networkDiagnosticsLoading) LiveLine(stringResource(R.string.manage_network_reading))
+                if (state.networkDiagnosticsError) Banner(stringResource(R.string.manage_network_error), BannerTone.WARNING, Modifier.padding(top = 8.dp))
+                state.networkDiagnostics?.let { network ->
+                    val route = when (network.hasDefaultRoute) { true -> stringResource(R.string.manage_health_available); false -> stringResource(R.string.manage_health_missing); null -> stringResource(R.string.manage_health_unknown) }
+                    val dns = when (network.dnsResolved) { true -> stringResource(R.string.manage_health_reachable); false -> stringResource(R.string.manage_network_dns_failed); null -> stringResource(R.string.manage_health_unknown) }
+                    val ping = when (network.internetReachable) { true -> stringResource(R.string.manage_health_reachable); false -> stringResource(R.string.manage_network_ping_failed); null -> stringResource(R.string.manage_health_unknown) }
+                    val loss = network.packetLossPercent?.let { "$it%" } ?: stringResource(R.string.manage_health_not_reported)
+                    val latency = network.averageLatencyMs?.let { "%.1f ms".format(java.util.Locale.ROOT, it) } ?: stringResource(R.string.manage_health_not_reported)
+                    SectionLabel(stringResource(R.string.manage_network_title))
+                    Body(listOf(
+                        msg(R.string.manage_health_route, "value" to route),
+                        msg(R.string.manage_network_dns, "value" to dns),
+                        msg(R.string.manage_network_ping, "value" to ping),
+                        msg(R.string.manage_network_loss, "value" to loss),
+                        msg(R.string.manage_network_latency, "value" to latency),
+                    ).joinToString("\n"), Modifier.padding(top = 4.dp))
+                    Caption(stringResource(R.string.manage_network_caveat), Modifier.padding(top = 4.dp))
+                }
                 state.health?.let { health ->
                     SectionLabel(stringResource(R.string.manage_health_title))
                     val ram = if (health.totalRamMb != null && health.availableRamMb != null) msg(R.string.manage_health_memory_value, "available" to health.availableRamMb.toString(), "total" to health.totalRamMb.toString()) else stringResource(R.string.manage_health_not_reported)

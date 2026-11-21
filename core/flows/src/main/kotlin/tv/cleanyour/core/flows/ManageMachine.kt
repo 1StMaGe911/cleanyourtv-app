@@ -73,6 +73,9 @@ data class ManageState(
     val healthLoading: Boolean = false,
     val health: tv.cleanyour.core.probe.DeviceHealth? = null,
     val healthError: Boolean = false,
+    val networkDiagnosticsLoading: Boolean = false,
+    val networkDiagnostics: tv.cleanyour.core.probe.NetworkDiagnostics? = null,
+    val networkDiagnosticsError: Boolean = false,
     val installedApps: List<InstalledAppRow> = emptyList(),
     val inventoryLoaded: Boolean = false,
     val appSizePackage: String? = null,
@@ -110,6 +113,7 @@ sealed interface ManageIntent {
     data object Resumed : ManageIntent
     data object Paused : ManageIntent
     data object CheckHealth : ManageIntent
+    data object CheckNetworkDiagnostics : ManageIntent
     data class ReadAppSize(val packageName: String) : ManageIntent
     data class ReadAppLastUsed(val packageName: String) : ManageIntent
 }
@@ -131,6 +135,9 @@ class ManageMachine(
     private data object HealthLoading
     private data class HealthLoaded(val health: tv.cleanyour.core.probe.DeviceHealth)
     private data object HealthFailed
+    private data object NetworkDiagnosticsLoading
+    private data class NetworkDiagnosticsLoaded(val tvId: TvId, val diagnostics: tv.cleanyour.core.probe.NetworkDiagnostics)
+    private data class NetworkDiagnosticsFailed(val tvId: TvId)
     private data class AppSizeLoading(val packageName: String)
     private data class AppSizeLoaded(val tvId: TvId, val packageName: String, val bytes: Long?)
     private data class AppSizeFailed(val tvId: TvId, val packageName: String)
@@ -313,7 +320,7 @@ class ManageMachine(
             state.copy(cards = event.cards, selected = selected, loading = false,
                 offline = cur != null && cur.debugging == DebugState.ON && cur.chip == ChipState.OFFLINE)
         }
-        is ManageIntent.Select -> state.copy(selected = event.tvId, healthLoading = false, health = null, healthError = false, installedApps = emptyList(), inventoryLoaded = false, appSizePackage = null, appSizeBytes = null, appSizeLoading = false, appSizeError = false, appLastUsedPackage = null, appLastUsedAtMs = null, appLastUsedLoading = false, appLastUsedError = false)
+        is ManageIntent.Select -> state.copy(selected = event.tvId, healthLoading = false, health = null, healthError = false, networkDiagnosticsLoading = false, networkDiagnostics = null, networkDiagnosticsError = false, installedApps = emptyList(), inventoryLoaded = false, appSizePackage = null, appSizeBytes = null, appSizeLoading = false, appSizeError = false, appLastUsedPackage = null, appLastUsedAtMs = null, appLastUsedLoading = false, appLastUsedError = false)
         is InventoryLoaded -> if (state.current?.id == event.tvId) state.copy(installedApps = event.apps, inventoryLoaded = true) else state
         is Thumb -> state.copy(cards = state.cards.map { if (it.id == event.tvId && event.png != null) it.copy(thumbnail = event.png) else it })
         Reconnecting -> state.copy(reconnecting = true)
@@ -322,6 +329,9 @@ class ManageMachine(
         HealthLoading -> state.copy(healthLoading = true, healthError = false)
         is HealthLoaded -> state.copy(healthLoading = false, health = event.health, healthError = false)
         HealthFailed -> state.copy(healthLoading = false, healthError = true)
+        NetworkDiagnosticsLoading -> state.copy(networkDiagnosticsLoading = true, networkDiagnosticsError = false)
+        is NetworkDiagnosticsLoaded -> if (state.current?.id == event.tvId) state.copy(networkDiagnosticsLoading = false, networkDiagnostics = event.diagnostics, networkDiagnosticsError = false) else state
+        is NetworkDiagnosticsFailed -> if (state.current?.id == event.tvId) state.copy(networkDiagnosticsLoading = false, networkDiagnosticsError = true) else state
         is AppSizeLoading -> state.copy(appSizePackage = event.packageName, appSizeBytes = null, appSizeLoading = true, appSizeError = false)
         is AppSizeLoaded -> if (state.current?.id == event.tvId && state.appSizePackage == event.packageName) state.copy(appSizeLoading = false, appSizeBytes = event.bytes, appSizeError = event.bytes == null) else state
         is AppSizeFailed -> if (state.current?.id == event.tvId && state.appSizePackage == event.packageName) state.copy(appSizeLoading = false, appSizeError = true) else state
@@ -345,6 +355,7 @@ class ManageMachine(
             is ManageIntent.Select -> scope.launch { connected() }
             ManageIntent.RefreshThumbnail -> scope.launch { thumbnail() }
             ManageIntent.CheckHealth -> if (id != null && !before.healthLoading) scope.launch { checkHealth(id) }
+            ManageIntent.CheckNetworkDiagnostics -> if (id != null && !before.networkDiagnosticsLoading) scope.launch { checkNetworkDiagnostics(id) }
             is ManageIntent.ReadAppSize -> if (id != null) scope.launch { readAppSize(id, event.packageName) }
             is ManageIntent.ReadAppLastUsed -> if (id != null) scope.launch { readAppLastUsed(id, event.packageName) }
             ManageIntent.Reconnect -> if (id != null && !after.reconnecting) scope.launch {
@@ -389,6 +400,23 @@ class ManageMachine(
             throw cancelled
         } catch (_: Exception) {
             send(HealthFailed)
+        }
+    }
+
+    // A separate read-only network sample. ICMP results are diagnostic hints, not proof that HTTPS works.
+    private suspend fun checkNetworkDiagnostics(id: TvId) {
+        send(NetworkDiagnosticsLoading)
+        val session = d.access.live(id)
+        if (session == null) {
+            send(NetworkDiagnosticsFailed(id))
+            return
+        }
+        try {
+            send(NetworkDiagnosticsLoaded(id, d.networkDiagnosticsReader.read(session)))
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            send(NetworkDiagnosticsFailed(id))
         }
     }
 

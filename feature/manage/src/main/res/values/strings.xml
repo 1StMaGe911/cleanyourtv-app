@@ -348,4 +348,15 @@
     <string name="manage_health_warning_low_storage">Low free storage</string>
     <string name="manage_health_warning_high_temperature">High reported temperature</string>
     <string name="manage_health_warning_no_internet">Internet probe failed</string>
+    <string name="manage_network_check">Check TV network</string>
+    <string name="manage_network_reading">Checking the TV network…</string>
+    <string name="manage_network_error">Could not read network diagnostics. Check the ADB connection and try again.</string>
+    <string name="manage_network_title">Network diagnostics</string>
+    <string name="manage_network_dns">DNS resolution: {value}</string>
+    <string name="manage_network_ping">ICMP ping: {value}</string>
+    <string name="manage_network_loss">Packet loss: {value}</string>
+    <string name="manage_network_latency">Average ping: {value}</string>
+    <string name="manage_network_dns_failed">DNS lookup failed</string>
+    <string name="manage_network_ping_failed">Ping failed</string>
+    <string name="manage_network_caveat">Ping tests can be blocked by some networks; failure does not necessarily mean the internet is unavailable.</string>
 </resources>
