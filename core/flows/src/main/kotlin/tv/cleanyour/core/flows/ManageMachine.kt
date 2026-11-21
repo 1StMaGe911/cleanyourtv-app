@@ -73,6 +73,7 @@ data class ManageState(
     val health: tv.cleanyour.core.probe.DeviceHealth? = null,
     val healthError: Boolean = false,
     val installedApps: List<InstalledAppRow> = emptyList(),
+    val inventoryLoaded: Boolean = false,
 ) {
     val current: TvCard? get() = cards.firstOrNull { it.id == selected } ?: cards.firstOrNull()
 }
@@ -295,8 +296,8 @@ class ManageMachine(
             state.copy(cards = event.cards, selected = selected, loading = false,
                 offline = cur != null && cur.debugging == DebugState.ON && cur.chip == ChipState.OFFLINE)
         }
-        is ManageIntent.Select -> state.copy(selected = event.tvId, healthLoading = false, health = null, healthError = false, installedApps = emptyList())
-        is InventoryLoaded -> if (state.current?.id == event.tvId) state.copy(installedApps = event.apps) else state
+        is ManageIntent.Select -> state.copy(selected = event.tvId, healthLoading = false, health = null, healthError = false, installedApps = emptyList(), inventoryLoaded = false)
+        is InventoryLoaded -> if (state.current?.id == event.tvId) state.copy(installedApps = event.apps, inventoryLoaded = true) else state
         is Thumb -> state.copy(cards = state.cards.map { if (it.id == event.tvId && event.png != null) it.copy(thumbnail = event.png) else it })
         Reconnecting -> state.copy(reconnecting = true)
         is WizardHomeRead -> state.copy(cards = state.cards.map { if (it.id == event.tvId) it.copy(wizardHome = event.applies, stockHomeBack = event.stockBack) else it })
