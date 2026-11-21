@@ -102,7 +102,7 @@ class ManageMachine(
     private val d: ManageDeps,
     scope: CoroutineScope,
     initial: TvId? = null,
-) : Machine<ManageState, ManageIntent, ManageEffect>(ManageState(selected = initial, addOns = d.store.addOns), scope) {
+) : Machine<ManageState, ManageIntent, ManageEffect>(ManageState(selected = initial, addOns = d.store.addOns, healthAvailable = true), scope) {
 
     private data class Loaded(val cards: List<TvCard>)
     private data class Thumb(val tvId: TvId, val png: ByteArray?)
