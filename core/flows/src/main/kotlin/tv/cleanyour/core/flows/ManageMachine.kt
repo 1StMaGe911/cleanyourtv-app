@@ -79,6 +79,10 @@ data class ManageState(
     val appSizeBytes: Long? = null,
     val appSizeLoading: Boolean = false,
     val appSizeError: Boolean = false,
+    val appLastUsedPackage: String? = null,
+    val appLastUsedAtMs: Long? = null,
+    val appLastUsedLoading: Boolean = false,
+    val appLastUsedError: Boolean = false,
 ) {
     val current: TvCard? get() = cards.firstOrNull { it.id == selected } ?: cards.firstOrNull()
 }
@@ -107,6 +111,7 @@ sealed interface ManageIntent {
     data object Paused : ManageIntent
     data object CheckHealth : ManageIntent
     data class ReadAppSize(val packageName: String) : ManageIntent
+    data class ReadAppLastUsed(val packageName: String) : ManageIntent
 }
 
 class ManageMachine(
@@ -129,6 +134,9 @@ class ManageMachine(
     private data class AppSizeLoading(val packageName: String)
     private data class AppSizeLoaded(val tvId: TvId, val packageName: String, val bytes: Long?)
     private data class AppSizeFailed(val tvId: TvId, val packageName: String)
+    private data class AppLastUsedLoading(val packageName: String)
+    private data class AppLastUsedLoaded(val tvId: TvId, val packageName: String, val atMs: Long?)
+    private data class AppLastUsedFailed(val tvId: TvId, val packageName: String)
     // 0.4.6: what the last connect read of each TV's Home said (WizardHome), for the cards.
     private val wizardHomes = java.util.concurrent.ConcurrentHashMap<TvId, Boolean>()
     // 0.4.8 (PLAN item 4): while Manage is on screen it keeps one hold on the shown TV's session, so the socket does not
@@ -305,7 +313,7 @@ class ManageMachine(
             state.copy(cards = event.cards, selected = selected, loading = false,
                 offline = cur != null && cur.debugging == DebugState.ON && cur.chip == ChipState.OFFLINE)
         }
-        is ManageIntent.Select -> state.copy(selected = event.tvId, healthLoading = false, health = null, healthError = false, installedApps = emptyList(), inventoryLoaded = false, appSizePackage = null, appSizeBytes = null, appSizeLoading = false, appSizeError = false)
+        is ManageIntent.Select -> state.copy(selected = event.tvId, healthLoading = false, health = null, healthError = false, installedApps = emptyList(), inventoryLoaded = false, appSizePackage = null, appSizeBytes = null, appSizeLoading = false, appSizeError = false, appLastUsedPackage = null, appLastUsedAtMs = null, appLastUsedLoading = false, appLastUsedError = false)
         is InventoryLoaded -> if (state.current?.id == event.tvId) state.copy(installedApps = event.apps, inventoryLoaded = true) else state
         is Thumb -> state.copy(cards = state.cards.map { if (it.id == event.tvId && event.png != null) it.copy(thumbnail = event.png) else it })
         Reconnecting -> state.copy(reconnecting = true)
@@ -317,6 +325,9 @@ class ManageMachine(
         is AppSizeLoading -> state.copy(appSizePackage = event.packageName, appSizeBytes = null, appSizeLoading = true, appSizeError = false)
         is AppSizeLoaded -> if (state.current?.id == event.tvId && state.appSizePackage == event.packageName) state.copy(appSizeLoading = false, appSizeBytes = event.bytes, appSizeError = event.bytes == null) else state
         is AppSizeFailed -> if (state.current?.id == event.tvId && state.appSizePackage == event.packageName) state.copy(appSizeLoading = false, appSizeError = true) else state
+        is AppLastUsedLoading -> state.copy(appLastUsedPackage = event.packageName, appLastUsedAtMs = null, appLastUsedLoading = true, appLastUsedError = false)
+        is AppLastUsedLoaded -> if (state.current?.id == event.tvId && state.appLastUsedPackage == event.packageName) state.copy(appLastUsedLoading = false, appLastUsedAtMs = event.atMs, appLastUsedError = event.atMs == null) else state
+        is AppLastUsedFailed -> if (state.current?.id == event.tvId && state.appLastUsedPackage == event.packageName) state.copy(appLastUsedLoading = false, appLastUsedError = true) else state
         is RestartsRead -> state.copy(cards = state.cards.map { if (it.id == event.tvId) it.copy(restarts = event.tally) else it })
         is Reconnected -> state.copy(reconnecting = false, offline = !event.ok && state.offline)
         else -> state
@@ -335,6 +346,7 @@ class ManageMachine(
             ManageIntent.RefreshThumbnail -> scope.launch { thumbnail() }
             ManageIntent.CheckHealth -> if (id != null && !before.healthLoading) scope.launch { checkHealth(id) }
             is ManageIntent.ReadAppSize -> if (id != null) scope.launch { readAppSize(id, event.packageName) }
+            is ManageIntent.ReadAppLastUsed -> if (id != null) scope.launch { readAppLastUsed(id, event.packageName) }
             ManageIntent.Reconnect -> if (id != null && !after.reconnecting) scope.launch {
                 send(Reconnecting)
                 val ok = d.access.session(id) is AccessResult.Ok
@@ -395,6 +407,24 @@ class ManageMachine(
             throw cancelled
         } catch (_: Exception) {
             send(AppSizeFailed(tvId, packageName))
+        }
+    }
+
+    // Usage statistics are optional on TV firmware; missing or restricted data remains unavailable.
+    private suspend fun readAppLastUsed(tvId: TvId, packageName: String) {
+        send(AppLastUsedLoading(packageName))
+        val session = d.access.live(tvId)
+        if (session == null) {
+            send(AppLastUsedFailed(tvId, packageName))
+            return
+        }
+        try {
+            val atMs = d.appLastUsedReader.read(session, PackageName(packageName))
+            send(AppLastUsedLoaded(tvId, packageName, atMs))
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            send(AppLastUsedFailed(tvId, packageName))
         }
     }
 

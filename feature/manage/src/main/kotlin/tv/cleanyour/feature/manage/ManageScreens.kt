@@ -238,6 +238,13 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                         }
                         else -> null
                     }
+                    val appLastUsedLabel = when {
+                        state.appLastUsedPackage != app.packageName -> null
+                        state.appLastUsedLoading -> "Last launched: checking…"
+                        state.appLastUsedError -> "Last launched: unavailable"
+                        state.appLastUsedAtMs != null -> "Last launched: ${SimpleDateFormat("d MMM, HH:mm", locale).format(Date(state.appLastUsedAtMs))}"
+                        else -> null
+                    }
                     val appDetails = listOfNotNull(
                         appTitle,
                         "Package: ${app.packageName}",
@@ -245,6 +252,7 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                         "Status: $appEnabled",
                         "Version code: ${app.versionCode}",
                         appSizeLabel,
+                        appLastUsedLabel,
                     ).joinToString("\n")
                     ListGroup(Modifier.padding(top = 8.dp)) {
                         SectionLabel("App details")
@@ -265,7 +273,7 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                                 else -> "Default state"
                             }
                             ListRow(title, subtitle = "$kind · $enabled · version code ${app.versionCode}",
-                                onClick = { selectedAppPackage = app.packageName; onIntent(ManageIntent.ReadAppSize(app.packageName)) })
+                                onClick = { selectedAppPackage = app.packageName; onIntent(ManageIntent.ReadAppSize(app.packageName)); onIntent(ManageIntent.ReadAppLastUsed(app.packageName)) })
                             if (index != matchingApps.lastIndex) ListDivider()
                         }
                     }

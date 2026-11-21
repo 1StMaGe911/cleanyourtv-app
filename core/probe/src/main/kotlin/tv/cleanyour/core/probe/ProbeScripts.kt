@@ -94,6 +94,12 @@ object ProbeScripts {
 
     fun fileSha256(path: RemotePath) = ShellLine("sha256sum ${q(path.absolute)}")
 
+    // Read-only last-used timestamp for one package. Only the timestamp line leaves the TV.
+    fun installedAppLastUsed(pkg: PackageName): ShellLine {
+        require(pkg.value == "android" || PACKAGE_RE.matches(pkg.value))
+        return ShellLine("dumpsys usagestats 2>/dev/null | grep -F -A 8 -- ${q("package=${pkg.value}")} | grep -m 1 'lastTimeUsed'")
+    }
+
     // Read-only size of base and split APK files for one package. The paths remain on the TV.
     fun installedAppApkSizes(pkg: PackageName): ShellLine {
         require(pkg.value == "android" || PACKAGE_RE.matches(pkg.value))

@@ -25,6 +25,7 @@ import tv.cleanyour.core.ops.ConfigTransport
 import tv.cleanyour.core.probe.Prober
 import tv.cleanyour.core.probe.AdbDeviceHealthReader
 import tv.cleanyour.core.probe.AdbInstalledAppSizeReader
+import tv.cleanyour.core.probe.AdbInstalledAppLastUsedReader
 import tv.cleanyour.core.registry.ArtifactFetcher
 import tv.cleanyour.core.registry.Registry
 import tv.cleanyour.core.session.SessionManager
@@ -138,6 +139,7 @@ class ManageDeps(
     // RFC-REACH-1: how the phone is connected, for "Copy connection details" (the app reads ConnectivityManager).
     val phoneNetwork: PhoneNetwork = PhoneNetwork { PhoneNetworkFacts.UNKNOWN },
     val appSizeReader: AdbInstalledAppSizeReader = AdbInstalledAppSizeReader(),
+    val appLastUsedReader: AdbInstalledAppLastUsedReader = AdbInstalledAppLastUsedReader(),
 ) {
     fun tv(id: TvId): Tv? = tvs.tvs.value.firstOrNull { it.id == id }
 
