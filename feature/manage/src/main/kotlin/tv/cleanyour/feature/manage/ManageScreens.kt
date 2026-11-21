@@ -232,8 +232,7 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                         state.appSizePackage != app.packageName -> null
                         state.appSizeLoading -> "APK size: checking…"
                         state.appSizeError -> "APK size: unavailable"
-                        state.appSizeBytes != null -> {
-                            val bytes = state.appSizeBytes
+                        state.appSizeBytes != null -> state.appSizeBytes?.let { bytes ->
                             if (bytes >= 1024L * 1024L) "APK size: ${"%.1f".format(bytes / (1024.0 * 1024.0))} MB"
                             else "APK size: ${((bytes + 1023L) / 1024L)} KB"
                         }
