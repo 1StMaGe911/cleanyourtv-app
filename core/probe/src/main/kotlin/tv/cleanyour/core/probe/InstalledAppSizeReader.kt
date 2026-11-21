@@ -1,8 +1,6 @@
 package tv.cleanyour.core.probe
 
 import tv.cleanyour.core.model.PackageName
-import tv.cleanyour.core.model.RawShell
-import tv.cleanyour.core.model.ShellLine
 import tv.cleanyour.core.session.ExecSpec
 import tv.cleanyour.core.session.RetryClass
 import tv.cleanyour.core.session.TvSession
@@ -14,15 +12,21 @@ import tv.cleanyour.core.session.TvSession
 class AdbInstalledAppSizeReader {
     @OptIn(RawShell::class)
     suspend fun read(session: TvSession, pkg: PackageName): Long? {
-        val line = ShellLine(
-            "for p in \$(pm path '\${pkg.value}' 2>/dev/null); do f=\${p#package:}; stat -c %s \"\$f\" 2>/dev/null; done",
-        )
+        val line = ProbeScripts.installedAppApkSizes(pkg)
         val result = session.exec(
             line,
             ExecSpec(timeoutMs = 5_000, stdoutCap = 4 * 1024, retry = RetryClass.IDEMPOTENT_READ),
         )
-        if (result.truncated || result.exit != 0) return null
-        val sizes = result.stdout.lineSequence().map(String::trim)
+        return InstalledAppSizeParser.parse(result.stdout, result.exit, result.truncated)
+    }
+}
+
+
+/** Accepts only numeric byte counts; null means the TV did not expose a usable APK size. */
+object InstalledAppSizeParser {
+    fun parse(stdout: String, exit: Int = 0, truncated: Boolean = false): Long? {
+        if (truncated || exit != 0) return null
+        val sizes = stdout.lineSequence().map(String::trim)
             .filter { it.matches(Regex("^[0-9]{1,15}$")) }
             .mapNotNull(String::toLongOrNull)
             .toList()
