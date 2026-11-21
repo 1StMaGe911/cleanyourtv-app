@@ -29,7 +29,7 @@ object DeviceHealthParser {
         val sections = linkedMapOf("" to mutableListOf<String>())
         var current = ""
         for (raw in stdout.lineSequence()) {
-            val line = raw.removeSuffix("\\r")
+            val line = raw.removeSuffix(13.toChar().toString())
             if (line.startsWith(MARK)) {
                 val name = line.removePrefix(MARK)
                 if (name !in expected || name in sections) throw ProbeException(ProbeStage.FACTS, "unexpected health section")
@@ -45,7 +45,7 @@ object DeviceHealthParser {
         val availableRam = kb(MEM_AVAILABLE)?.div(1024)?.coerceAtMost(Int.MAX_VALUE.toLong())?.toInt()
         val storageLines = sections.getValue("storage")
         val storage = runCatching {
-            val all = skipLong(storageLines.asSequence()).map(String::trim).filter(String::isNotEmpty).toList()
+            val all = skipLong(storageLines.asSequence()).map { it.trim() }.filter { it.isNotEmpty() }.toList()
             val header = all.firstOrNull { it.startsWith("Filesystem", true) }
             if (header == null || !Regex("(?i)^Filesystem\\s+(1K|1024)-blocks\\s").containsMatchIn(header)) null
             else {
