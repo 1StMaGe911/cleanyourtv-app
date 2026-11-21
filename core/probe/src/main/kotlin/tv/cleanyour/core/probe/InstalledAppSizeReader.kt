@@ -10,7 +10,6 @@ import tv.cleanyour.core.session.TvSession
  * This is deliberately on-demand and read-only; it does not include private app data.
  */
 class AdbInstalledAppSizeReader {
-    @OptIn(RawShell::class)
     suspend fun read(session: TvSession, pkg: PackageName): Long? {
         val line = ProbeScripts.installedAppApkSizes(pkg)
         val result = session.exec(
