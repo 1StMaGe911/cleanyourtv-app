@@ -59,6 +59,15 @@ object ProbeScripts {
     val HOME_FOCUS = ShellLine("dumpsys activity activities | grep -E 'ResumedActivity'")
     val BOOT_ID = ShellLine("cat /proc/sys/kernel/random/boot_id")
     val FREE_DATA = ShellLine("df -k /data")
+
+    // Read-only health sample for the optional TV health screen. Every section is bounded and
+    // parsed as untrusted output; unsupported thermal/network commands simply produce unknown data.
+    val DEVICE_HEALTH = ShellLine(
+        "${mark("meminfo")}; cat /proc/meminfo; ${mark("storage")}; df -k /data; " +
+            "${mark("cpu")}; cat /proc/loadavg; ${mark("thermal")}; " +
+            "for f in /sys/class/thermal/thermal_zone*/temp; do [ -r \"\$f\" ] && cat \"\$f\"; done; " +
+            "${mark("network")}; ip route 2>/dev/null | head -n 1; ping -c 1 -W 2 1.1.1.1 >/dev/null 2>&1; echo \$?"
+    )
     val SCREENSHOT = ShellLine("mkdir -p ${RemoteDir.TMP.path} && screencap -p ${RemoteDir.TMP.path}/$SCREEN_FILE")
     // Only the file goes, never the directory: the run takes thumbnails between steps, and an rmdir
     // here removed the TMP directory the plan had just made for the home watchdog, so the watchdog
@@ -119,7 +128,7 @@ object ProbeScripts {
     val all: Map<String, ShellLine> = linkedMapOf(
         "FACTS" to FACTS, "PACKAGES" to PACKAGES, "DISABLED" to DISABLED, "PACKAGE_FLAGS" to PACKAGE_FLAGS, "HOME" to HOME,
         "HOME_RESOLVED" to HOME_RESOLVED, "LAUNCHABLE" to LAUNCHABLE, "INPUTS" to INPUTS, "SETTINGS" to SETTINGS, "HOME_FOCUS" to HOME_FOCUS, "BOOT_ID" to BOOT_ID,
-        "FREE_DATA" to FREE_DATA, "SCREENSHOT" to SCREENSHOT, "SCREENSHOT_CLEANUP" to SCREENSHOT_CLEANUP, "MKDIR_TMP" to MKDIR_TMP,
+        "FREE_DATA" to FREE_DATA, "DEVICE_HEALTH" to DEVICE_HEALTH, "SCREENSHOT" to SCREENSHOT, "SCREENSHOT_CLEANUP" to SCREENSHOT_CLEANUP, "MKDIR_TMP" to MKDIR_TMP,
         "NOOP_INSTALL" to NOOP_INSTALL, "NOOP_UNINSTALL" to NOOP_UNINSTALL, "NOOP_CLEANUP" to NOOP_CLEANUP, "PS_ARGS" to PS_ARGS,
         "WIFI_OWNERS" to WIFI_OWNERS,
     )
