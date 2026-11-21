@@ -69,6 +69,7 @@ object DeviceHealthParser {
         val route = when (networkLines.firstOrNull()) {
             null -> null
             "__cyt_no_default_route__" -> false
+            "__cyt_route_probe_unsupported__" -> null
             else -> if (networkLines.first().startsWith("default ")) true else null
         }
         val ping = networkLines.lastOrNull()?.takeIf { it == "0" || it == "1" }?.toIntOrNull()?.let { it == 0 }
