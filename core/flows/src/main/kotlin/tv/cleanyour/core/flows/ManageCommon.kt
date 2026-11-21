@@ -23,6 +23,7 @@ import tv.cleanyour.core.model.Tv
 import tv.cleanyour.core.model.TvId
 import tv.cleanyour.core.ops.ConfigTransport
 import tv.cleanyour.core.probe.Prober
+import tv.cleanyour.core.probe.AdbDeviceHealthReader
 import tv.cleanyour.core.registry.ArtifactFetcher
 import tv.cleanyour.core.registry.Registry
 import tv.cleanyour.core.session.SessionManager
@@ -88,6 +89,7 @@ class ManageDeps(
     val engine: Engine,
     val ledger: RunLedger,
     val prober: Prober,
+    val healthReader: AdbDeviceHealthReader = AdbDeviceHealthReader(),
     val profiles: ProfileSource,
     val facts: FactsTable,
     val snapshots: SnapshotStore,
