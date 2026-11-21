@@ -184,17 +184,36 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
             if (state.installedApps.isNotEmpty()) {
                 var appQuery by rememberSaveable(tv.id.value) { mutableStateOf("") }
                 var appSortDescending by rememberSaveable(tv.id.value) { mutableStateOf(false) }
+                var appFilter by rememberSaveable(tv.id.value) { mutableStateOf("ALL") }
                 var selectedAppPackage by rememberSaveable(tv.id.value) { mutableStateOf<String?>(null) }
                 val matchingApps = state.installedApps.filter { app ->
-                    app.packageName.contains(appQuery, ignoreCase = true) ||
+                    val matchesQuery = app.packageName.contains(appQuery, ignoreCase = true) ||
                         app.label.orEmpty().contains(appQuery, ignoreCase = true)
+                    val matchesFilter = when (appFilter) {
+                        "SYSTEM" -> app.system
+                        "USER" -> !app.system
+                        else -> true
+                    }
+                    matchesQuery && matchesFilter
                 }.let { apps ->
                     if (appSortDescending) apps.sortedByDescending { (it.label ?: it.packageName).lowercase() }
                     else apps.sortedBy { (it.label ?: it.packageName).lowercase() }
                 }
                 val selectedApp = state.installedApps.firstOrNull { it.packageName == selectedAppPackage }
+                val systemAppCount = state.installedApps.count { it.system }
+                val userAppCount = state.installedApps.size - systemAppCount
                 SectionLabel("Installed apps (${state.installedApps.size})")
                 Body("Read-only list from the latest TV scan. Nothing is changed on the TV.", Modifier.padding(top = 4.dp))
+                ChoiceList(
+                    listOf(
+                        ChoiceOption("ALL", "All apps", "${state.installedApps.size} apps", icon = null),
+                        ChoiceOption("SYSTEM", "System", "${systemAppCount} apps", icon = null),
+                        ChoiceOption("USER", "User", "${userAppCount} apps", icon = null),
+                    ),
+                    appFilter,
+                    { appFilter = it.key },
+                    Modifier.padding(top = 10.dp),
+                )
                 CytTextField(appQuery, { appQuery = it }, "Search apps")
                 TertiaryButton(if (appSortDescending) "Sort: Z–A" else "Sort: A–Z", { appSortDescending = !appSortDescending })
                 selectedApp?.let { app ->
