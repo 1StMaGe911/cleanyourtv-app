@@ -21,7 +21,7 @@ class AdbInstalledAppLastUsedReader {
 
 /** Parses only Android's numeric lastTimeUsed value (Unix epoch milliseconds). */
 object InstalledAppLastUsedParser {
-    private val timestamp = Regex("""\\blastTimeUsed\\s*[=:]\\s*([0-9]{1,16})\\b""")
+    private val timestamp = Regex("""\blastTimeUsed\s*[=:]\s*([0-9]{1,16})\b""")
 
     fun parse(stdout: String, exit: Int = 0, truncated: Boolean = false): Long? {
         if (exit != 0 || truncated) return null

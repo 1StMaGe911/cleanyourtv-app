@@ -8,7 +8,7 @@ import kotlin.test.assertNull
 
 class InstalledAppLastUsedReaderTest {
     @Test fun parsesAndroidLastTimeUsedMillis() {
-        assertEquals(1_800_000_000_000L, InstalledAppLastUsedParser.parse("package=com.example.app\\nlastTimeUsed=1800000000000\\n"))
+        assertEquals(1_800_000_000_000L, InstalledAppLastUsedParser.parse("package=com.example.app\nlastTimeUsed=1800000000000\n"))
         assertEquals(1_800_000_000_000L, InstalledAppLastUsedParser.parse("lastTimeUsed: 1800000000000"))
     }
 
