@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="manage_apps_title">Установленные приложения</string>
+    <string name="manage_apps_empty">Последнее сканирование телевизора не обнаружило приложений.</string>
+    <string name="manage_apps_count">Установленные приложения (%1$d)</string>
+    <string name="manage_apps_read_only">Список получен при последнем сканировании. Приложения на телевизоре не изменяются.</string>
+    <string name="manage_apps_all">Все</string>
+    <string name="manage_apps_system">Системные</string>
+    <string name="manage_apps_user">Пользовательские</string>
+    <string name="manage_apps_count_short">%1$d шт.</string>
+    <string name="manage_apps_search">Поиск приложений</string>
+    <string name="manage_apps_sort_za">Сортировка: Я–А</string>
+    <string name="manage_apps_sort_az">Сортировка: А–Я</string>
+    <string name="manage_apps_no_match">По этому запросу ничего не найдено.</string>
+    <string name="manage_app_details">Сведения о приложении</string>
+    <string name="manage_app_close_details">Закрыть сведения</string>
+    <string name="manage_app_system">Системное приложение</string>
+    <string name="manage_app_user">Пользовательское приложение</string>
+    <string name="manage_app_enabled">Включено</string>
+    <string name="manage_app_disabled">Отключено</string>
+    <string name="manage_app_default_state">Состояние по умолчанию</string>
+    <string name="manage_app_size_checking">Размер APK: проверка…</string>
+    <string name="manage_app_size_unavailable">Размер APK: недоступен</string>
+    <string name="manage_app_size_mb">Размер APK: %1$s МБ</string>
+    <string name="manage_app_size_kb">Размер APK: %1$d КБ</string>
+    <string name="manage_app_last_used_checking">Последнее использование: проверка…</string>
+    <string name="manage_app_last_used_unavailable">Последнее использование: недоступно</string>
+    <string name="manage_app_last_used">Последнее использование: %1$s</string>
+    <string name="manage_app_package">Пакет: %1$s</string>
+    <string name="manage_app_type">Тип: %1$s</string>
+    <string name="manage_app_status">Состояние: %1$s</string>
+    <string name="manage_app_version_code">Код версии: %1$d</string>
+    <string name="manage_app_row_subtitle">%1$s · %2$s · код версии %3$d</string>
+</resources>

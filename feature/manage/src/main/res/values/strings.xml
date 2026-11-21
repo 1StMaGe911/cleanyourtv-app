@@ -289,4 +289,38 @@
     <string name="report_issue_error">That isn\'t a link to an issue of this app on GitHub.</string>
     <string name="report_issue_save">Remember it</string>
     <string name="report_issue_open">Open the issue</string>
+
+    <!-- Installed app inventory (read-only) -->
+    <string name="manage_apps_title">Installed apps</string>
+    <string name="manage_apps_empty">No apps were returned by the latest TV scan.</string>
+    <string name="manage_apps_count">Installed apps (%1$d)</string>
+    <string name="manage_apps_read_only">Read-only list from the latest TV scan. Nothing is changed on the TV.</string>
+    <string name="manage_apps_all">All apps</string>
+    <string name="manage_apps_system">System</string>
+    <string name="manage_apps_user">User</string>
+    <string name="manage_apps_count_short">%1$d apps</string>
+    <string name="manage_apps_search">Search apps</string>
+    <string name="manage_apps_sort_za">Sort: Z–A</string>
+    <string name="manage_apps_sort_az">Sort: A–Z</string>
+    <string name="manage_apps_no_match">No apps match this search.</string>
+    <string name="manage_app_details">App details</string>
+    <string name="manage_app_close_details">Close details</string>
+    <string name="manage_app_system">System app</string>
+    <string name="manage_app_user">User app</string>
+    <string name="manage_app_enabled">Enabled</string>
+    <string name="manage_app_disabled">Disabled</string>
+    <string name="manage_app_default_state">Default state</string>
+    <string name="manage_app_size_checking">APK size: checking…</string>
+    <string name="manage_app_size_unavailable">APK size: unavailable</string>
+    <string name="manage_app_size_mb">APK size: %1$s MB</string>
+    <string name="manage_app_size_kb">APK size: %1$d KB</string>
+    <string name="manage_app_last_used_checking">Last used: checking…</string>
+    <string name="manage_app_last_used_unavailable">Last used: unavailable</string>
+    <string name="manage_app_last_used">Last used: %1$s</string>
+    <string name="manage_app_package">Package: %1$s</string>
+    <string name="manage_app_type">Type: %1$s</string>
+    <string name="manage_app_status">Status: %1$s</string>
+    <string name="manage_app_version_code">Version code: %1$d</string>
+    <string name="manage_app_row_subtitle">%1$s · %2$s · version code %3$d</string>
+
 </resources>

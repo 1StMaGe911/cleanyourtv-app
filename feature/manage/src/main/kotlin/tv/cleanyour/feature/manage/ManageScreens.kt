@@ -183,8 +183,8 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
             }
             if (state.inventoryLoaded) {
                 if (state.installedApps.isEmpty()) {
-                    SectionLabel("Installed apps")
-                    Body("No apps were returned by the latest TV scan.", Modifier.padding(top = 4.dp))
+                    SectionLabel(stringResource(R.string.manage_apps_title))
+                    Body(stringResource(R.string.manage_apps_empty), Modifier.padding(top = 4.dp))
                 } else {
                 var appQuery by rememberSaveable(tv.id.value) { mutableStateOf("") }
                 var appSortDescending by rememberSaveable(tv.id.value) { mutableStateOf(false) }
@@ -206,73 +206,73 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                 val selectedApp = state.installedApps.firstOrNull { it.packageName == selectedAppPackage }
                 val systemAppCount = state.installedApps.count { it.system }
                 val userAppCount = state.installedApps.size - systemAppCount
-                SectionLabel("Installed apps (${state.installedApps.size})")
-                Body("Read-only list from the latest TV scan. Nothing is changed on the TV.", Modifier.padding(top = 4.dp))
+                SectionLabel(stringResource(R.string.manage_apps_count, state.installedApps.size))
+                Body(stringResource(R.string.manage_apps_read_only), Modifier.padding(top = 4.dp))
                 ChoiceList(
                     listOf(
-                        ChoiceOption("ALL", "All apps", "${state.installedApps.size} apps", icon = null),
-                        ChoiceOption("SYSTEM", "System", "${systemAppCount} apps", icon = null),
-                        ChoiceOption("USER", "User", "${userAppCount} apps", icon = null),
+                        ChoiceOption("ALL", stringResource(R.string.manage_apps_all), stringResource(R.string.manage_apps_count_short, state.installedApps.size), icon = null),
+                        ChoiceOption("SYSTEM", stringResource(R.string.manage_apps_system), stringResource(R.string.manage_apps_count_short, systemAppCount), icon = null),
+                        ChoiceOption("USER", stringResource(R.string.manage_apps_user), stringResource(R.string.manage_apps_count_short, userAppCount), icon = null),
                     ),
                     appFilter,
                     { appFilter = it.key },
                     Modifier.padding(top = 10.dp),
                 )
-                CytTextField(appQuery, { appQuery = it }, "Search apps")
-                TertiaryButton(if (appSortDescending) "Sort: Z–A" else "Sort: A–Z", { appSortDescending = !appSortDescending })
+                CytTextField(appQuery, { appQuery = it }, stringResource(R.string.manage_apps_search))
+                TertiaryButton(stringResource(if (appSortDescending) R.string.manage_apps_sort_za else R.string.manage_apps_sort_az), { appSortDescending = !appSortDescending })
                 selectedApp?.let { app ->
                     val appTitle = app.label?.takeIf { it.isNotBlank() } ?: app.packageName
-                    val appKind = if (app.system) "System app" else "User app"
+                    val appKind = stringResource(if (app.system) R.string.manage_app_system else R.string.manage_app_user)
                     val appEnabled = when (app.enabled) {
-                        "ENABLED" -> "Enabled"
-                        "DISABLED", "DISABLED_USER" -> "Disabled"
-                        else -> "Default state"
+                        "ENABLED" -> stringResource(R.string.manage_app_enabled)
+                        "DISABLED", "DISABLED_USER" -> stringResource(R.string.manage_app_disabled)
+                        else -> stringResource(R.string.manage_app_default_state)
                     }
                     val appSizeLabel = when {
                         state.appSizePackage != app.packageName -> null
-                        state.appSizeLoading -> "APK size: checking…"
-                        state.appSizeError -> "APK size: unavailable"
+                        state.appSizeLoading -> stringResource(R.string.manage_app_size_checking)
+                        state.appSizeError -> stringResource(R.string.manage_app_size_unavailable)
                         state.appSizeBytes != null -> state.appSizeBytes?.let { bytes ->
-                            if (bytes >= 1024L * 1024L) "APK size: ${"%.1f".format(bytes / (1024.0 * 1024.0))} MB"
-                            else "APK size: ${((bytes + 1023L) / 1024L)} KB"
+                            if (bytes >= 1024L * 1024L) stringResource(R.string.manage_app_size_mb, "%.1f".format(locale, bytes / (1024.0 * 1024.0)))
+                            else stringResource(R.string.manage_app_size_kb, (bytes + 1023L) / 1024L)
                         }
                         else -> null
                     }
                     val appLastUsedLabel = when {
                         state.appLastUsedPackage != app.packageName -> null
-                        state.appLastUsedLoading -> "Last launched: checking…"
-                        state.appLastUsedError -> "Last launched: unavailable"
-                        state.appLastUsedAtMs != null -> state.appLastUsedAtMs?.let { timestamp -> "Last launched: ${SimpleDateFormat("d MMM, HH:mm", locale).format(Date(timestamp))}" }
+                        state.appLastUsedLoading -> stringResource(R.string.manage_app_last_used_checking)
+                        state.appLastUsedError -> stringResource(R.string.manage_app_last_used_unavailable)
+                        state.appLastUsedAtMs != null -> state.appLastUsedAtMs?.let { timestamp -> stringResource(R.string.manage_app_last_used, SimpleDateFormat("d MMM, HH:mm", locale).format(Date(timestamp))) }
                         else -> null
                     }
                     val appDetails = listOfNotNull(
                         appTitle,
-                        "Package: ${app.packageName}",
-                        "Type: $appKind",
-                        "Status: $appEnabled",
-                        "Version code: ${app.versionCode}",
+                        stringResource(R.string.manage_app_package, app.packageName),
+                        stringResource(R.string.manage_app_type, appKind),
+                        stringResource(R.string.manage_app_status, appEnabled),
+                        stringResource(R.string.manage_app_version_code, app.versionCode),
                         appSizeLabel,
                         appLastUsedLabel,
                     ).joinToString("\n")
                     ListGroup(Modifier.padding(top = 8.dp)) {
-                        SectionLabel("App details")
+                        SectionLabel(stringResource(R.string.manage_app_details))
                         Body(appDetails, Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                        LinkRow("Close details", { selectedAppPackage = null }, chevron = false)
+                        LinkRow(stringResource(R.string.manage_app_close_details), { selectedAppPackage = null }, chevron = false)
                     }
                 }
                 if (matchingApps.isEmpty()) {
-                    Body("No apps match this search.", Modifier.padding(top = 8.dp))
+                    Body(stringResource(R.string.manage_apps_no_match), Modifier.padding(top = 8.dp))
                 } else {
                     ListGroup(Modifier.padding(top = 8.dp)) {
                         matchingApps.forEachIndexed { index, app ->
                             val title = app.label?.takeIf { it.isNotBlank() } ?: app.packageName
-                            val kind = if (app.system) "System app" else "User app"
+                            val kind = stringResource(if (app.system) R.string.manage_app_system else R.string.manage_app_user)
                             val enabled = when (app.enabled) {
-                                "ENABLED" -> "Enabled"
-                                "DISABLED", "DISABLED_USER" -> "Disabled"
-                                else -> "Default state"
+                                "ENABLED" -> stringResource(R.string.manage_app_enabled)
+                                "DISABLED", "DISABLED_USER" -> stringResource(R.string.manage_app_disabled)
+                                else -> stringResource(R.string.manage_app_default_state)
                             }
-                            ListRow(title, subtitle = "$kind · $enabled · version code ${app.versionCode}",
+                            ListRow(title, subtitle = stringResource(R.string.manage_app_row_subtitle, kind, enabled, app.versionCode),
                                 onClick = { selectedAppPackage = app.packageName; onIntent(ManageIntent.ReadAppSize(app.packageName)); onIntent(ManageIntent.ReadAppLastUsed(app.packageName)) })
                             if (index != matchingApps.lastIndex) ListDivider()
                         }
