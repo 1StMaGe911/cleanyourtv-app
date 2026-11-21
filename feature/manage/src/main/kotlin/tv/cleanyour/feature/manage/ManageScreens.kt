@@ -137,7 +137,7 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
             if (!tv.clean || tv.stockHomeBack) PrimaryButton(stringResource(R.string.manage_clean_again), { onIntent(ManageIntent.CleanAgain) }, Modifier.padding(top = 16.dp), guardObscured = false)
             else SecondaryButton(stringResource(R.string.manage_clean_again), { onIntent(ManageIntent.CleanAgain) }, Modifier.padding(top = 16.dp))
 
-            if (state.healthAvailable) {
+            {
                 // Read-only diagnostics: no settings or apps on the TV are changed.
                 SecondaryButton("Check TV health", { onIntent(ManageIntent.CheckHealth) }, Modifier.padding(top = 8.dp))
                 if (state.healthLoading) LiveLine("Reading TV diagnostics…")
