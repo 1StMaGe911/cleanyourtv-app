@@ -183,13 +183,34 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
             }
             if (state.installedApps.isNotEmpty()) {
                 var appQuery by rememberSaveable(tv.id.value) { mutableStateOf("") }
+                var appSortDescending by rememberSaveable(tv.id.value) { mutableStateOf(false) }
+                var selectedAppPackage by rememberSaveable(tv.id.value) { mutableStateOf<String?>(null) }
                 val matchingApps = state.installedApps.filter { app ->
                     app.packageName.contains(appQuery, ignoreCase = true) ||
                         app.label.orEmpty().contains(appQuery, ignoreCase = true)
+                }.let { apps ->
+                    if (appSortDescending) apps.sortedByDescending { (it.label ?: it.packageName).lowercase() }
+                    else apps.sortedBy { (it.label ?: it.packageName).lowercase() }
                 }
+                val selectedApp = state.installedApps.firstOrNull { it.packageName == selectedAppPackage }
                 SectionLabel("Installed apps (${state.installedApps.size})")
                 Body("Read-only list from the latest TV scan. Nothing is changed on the TV.", Modifier.padding(top = 4.dp))
                 CytTextField(appQuery, { appQuery = it }, "Search apps")
+                TertiaryButton(if (appSortDescending) "Sort: Z–A" else "Sort: A–Z", { appSortDescending = !appSortDescending })
+                selectedApp?.let { app ->
+                    val appTitle = app.label?.takeIf { it.isNotBlank() } ?: app.packageName
+                    val appKind = if (app.system) "System app" else "User app"
+                    val appEnabled = when (app.enabled) {
+                        "ENABLED" -> "Enabled"
+                        "DISABLED", "DISABLED_USER" -> "Disabled"
+                        else -> "Default state"
+                    }
+                    ListGroup(Modifier.padding(top = 8.dp)) {
+                        SectionLabel("App details")
+                        Body("$appTitle\nPackage: ${app.packageName}\nType: $appKind\nStatus: $appEnabled\nVersion code: ${app.versionCode}", Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                        LinkRow("Close details", { selectedAppPackage = null }, chevron = false)
+                    }
+                }
                 if (matchingApps.isEmpty()) {
                     Body("No apps match this search.", Modifier.padding(top = 8.dp))
                 } else {
@@ -202,7 +223,8 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                                 "DISABLED", "DISABLED_USER" -> "Disabled"
                                 else -> "Default state"
                             }
-                            ListRow(title, subtitle = "$kind · $enabled · version code ${app.versionCode}")
+                            ListRow(title, subtitle = "$kind · $enabled · version code ${app.versionCode}",
+                                onClick = { selectedAppPackage = app.packageName })
                             if (index != matchingApps.lastIndex) ListDivider()
                         }
                     }
