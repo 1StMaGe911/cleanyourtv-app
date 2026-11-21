@@ -242,7 +242,7 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                         state.appLastUsedPackage != app.packageName -> null
                         state.appLastUsedLoading -> "Last launched: checking…"
                         state.appLastUsedError -> "Last launched: unavailable"
-                        state.appLastUsedAtMs != null -> "Last launched: ${SimpleDateFormat("d MMM, HH:mm", locale).format(Date(state.appLastUsedAtMs))}"
+                        state.appLastUsedAtMs != null -> state.appLastUsedAtMs?.let { timestamp -> "Last launched: ${SimpleDateFormat("d MMM, HH:mm", locale).format(Date(timestamp))}" }
                         else -> null
                     }
                     val appDetails = listOfNotNull(
