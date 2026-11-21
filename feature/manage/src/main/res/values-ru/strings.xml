@@ -31,4 +31,23 @@
     <string name="manage_app_status">Состояние: %1$s</string>
     <string name="manage_app_version_code">Код версии: %1$d</string>
     <string name="manage_app_row_subtitle">%1$s · %2$s · код версии %3$d</string>
+    <string name="manage_health_check">Проверить состояние ТВ</string>
+    <string name="manage_health_reading">Считываем диагностику телевизора…</string>
+    <string name="manage_health_error">Не удалось получить диагностику. Проверьте, что телевизор подключён по ADB, и повторите попытку.</string>
+    <string name="manage_health_title">Состояние телевизора</string>
+    <string name="manage_health_not_reported">Нет данных</string>
+    <string name="manage_health_available">Доступен</string>
+    <string name="manage_health_missing">Отсутствует</string>
+    <string name="manage_health_unknown">Неизвестно</string>
+    <string name="manage_health_reachable">Доступен</string>
+    <string name="manage_health_probe_failed">Проверка не пройдена</string>
+    <string name="manage_health_score">Общая оценка: {value}</string>
+    <string name="manage_health_not_enough_data">Недостаточно данных</string>
+    <string name="manage_health_ram">ОЗУ: {value}</string>
+    <string name="manage_health_storage">Память: {value}</string>
+    <string name="manage_health_cpu">Средняя нагрузка CPU: {value}</string>
+    <string name="manage_health_temperature">Температура по данным ТВ: {value}</string>
+    <string name="manage_health_route">Маршрут сети: {value}</string>
+    <string name="manage_health_internet">Проверка интернета: {value}</string>
+
 </resources>

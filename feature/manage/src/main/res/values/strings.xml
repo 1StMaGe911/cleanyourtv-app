@@ -323,4 +323,23 @@
     <string name="manage_app_version_code">Version code: %1$d</string>
     <string name="manage_app_row_subtitle">%1$s · %2$s · version code %3$d</string>
 
+    <string name="manage_health_check">Check TV health</string>
+    <string name="manage_health_reading">Reading TV diagnostics…</string>
+    <string name="manage_health_error">Could not read TV diagnostics. Check that the TV is connected by ADB and try again.</string>
+    <string name="manage_health_title">TV health</string>
+    <string name="manage_health_not_reported">Not reported</string>
+    <string name="manage_health_available">Available</string>
+    <string name="manage_health_missing">Missing</string>
+    <string name="manage_health_unknown">Unknown</string>
+    <string name="manage_health_reachable">Reachable</string>
+    <string name="manage_health_probe_failed">Probe failed</string>
+    <string name="manage_health_score">Overall score: {value}</string>
+    <string name="manage_health_not_enough_data">Not enough data</string>
+    <string name="manage_health_ram">RAM: {value}</string>
+    <string name="manage_health_storage">Storage: {value}</string>
+    <string name="manage_health_cpu">CPU load average: {value}</string>
+    <string name="manage_health_temperature">Reported temperature: {value}</string>
+    <string name="manage_health_route">Network route: {value}</string>
+    <string name="manage_health_internet">Internet test: {value}</string>
+
 </resources>

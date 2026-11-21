@@ -139,18 +139,18 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
 
             if (state.healthEnabled) {
                 // Read-only diagnostics: no settings or apps on the TV are changed.
-                SecondaryButton("Check TV health", { onIntent(ManageIntent.CheckHealth) }, Modifier.padding(top = 8.dp))
-                if (state.healthLoading) LiveLine("Reading TV diagnostics…")
-                if (state.healthError) Banner("Could not read TV diagnostics. Check that the TV is connected by ADB and try again.", BannerTone.WARNING, Modifier.padding(top = 12.dp))
+                SecondaryButton(stringResource(R.string.manage_health_check), { onIntent(ManageIntent.CheckHealth) }, Modifier.padding(top = 8.dp))
+                if (state.healthLoading) LiveLine(stringResource(R.string.manage_health_reading))
+                if (state.healthError) Banner(stringResource(R.string.manage_health_error), BannerTone.WARNING, Modifier.padding(top = 12.dp))
                 state.health?.let { health ->
-                    SectionLabel("TV health")
-                    val ram = if (health.totalRamMb != null && health.availableRamMb != null) "${health.availableRamMb} MB free / ${health.totalRamMb} MB" else "Not reported"
+                    SectionLabel(stringResource(R.string.manage_health_title))
+                    val ram = if (health.totalRamMb != null && health.availableRamMb != null) "${health.availableRamMb} MB free / ${health.totalRamMb} MB" else stringResource(R.string.manage_health_not_reported)
                     val storage = if (health.totalStorageMb != null && health.availableStorageMb != null) "${health.availableStorageMb} MB free / ${health.totalStorageMb} MB" else "Not reported"
                     val load = health.cpuLoadAverage?.let { "%.2f".format(java.util.Locale.ROOT, it) } ?: "Not reported"
                     val temperature = health.temperatureCelsius?.let { "%.1f °C".format(java.util.Locale.ROOT, it) } ?: "Not reported"
-                    val route = when (health.hasDefaultRoute) { true -> "Available"; false -> "Missing"; null -> "Unknown" }
-                    val internet = when (health.internetReachable) { true -> "Reachable"; false -> "Probe failed"; null -> "Unknown" }
-                    Body("Overall score: ${health.score?.let { "$it/100" } ?: "Not enough data"}\nRAM: $ram\nStorage: $storage\nCPU load average: $load\nReported temperature: $temperature\nNetwork route: $route\nInternet test: $internet", Modifier.padding(top = 4.dp))
+                    val route = when (health.hasDefaultRoute) { true -> stringResource(R.string.manage_health_available); false -> stringResource(R.string.manage_health_missing); null -> stringResource(R.string.manage_health_unknown) }
+                    val internet = when (health.internetReachable) { true -> stringResource(R.string.manage_health_reachable); false -> stringResource(R.string.manage_health_probe_failed); null -> stringResource(R.string.manage_health_unknown) }
+                    Body(listOf(\n                        stringResource(R.string.manage_health_score, health.score?.let { "$it/100" } ?: stringResource(R.string.manage_health_not_enough_data)),\n                        stringResource(R.string.manage_health_ram, ram),\n                        stringResource(R.string.manage_health_storage, storage),\n                        stringResource(R.string.manage_health_cpu, load),\n                        stringResource(R.string.manage_health_temperature, temperature),\n                        stringResource(R.string.manage_health_route, route),\n                        stringResource(R.string.manage_health_internet, internet),\n                    ).joinToString("\\n"), Modifier.padding(top = 4.dp))
                     if (health.warnings.isNotEmpty()) Banner(health.warnings.joinToString("\n"), BannerTone.WARNING, Modifier.padding(top = 8.dp))
                 }
             }
