@@ -181,6 +181,34 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                 )
                 if (state.switchingHome) LiveLine(stringResource(R.string.manage_wizard_home_working))
             }
+            if (state.installedApps.isNotEmpty()) {
+                var appQuery by rememberSaveable(tv.id.value) { mutableStateOf("") }
+                val matchingApps = state.installedApps.filter { app ->
+                    app.packageName.contains(appQuery, ignoreCase = true) ||
+                        app.label.orEmpty().contains(appQuery, ignoreCase = true)
+                }
+                SectionLabel("Installed apps (${state.installedApps.size})")
+                Body("Read-only list from the latest TV scan. Nothing is changed on the TV.", Modifier.padding(top = 4.dp))
+                CytTextField(appQuery, { appQuery = it }, "Search apps")
+                if (matchingApps.isEmpty()) {
+                    Body("No apps match this search.", Modifier.padding(top = 8.dp))
+                } else {
+                    ListGroup(Modifier.padding(top = 8.dp)) {
+                        matchingApps.forEachIndexed { index, app ->
+                            val title = app.label?.takeIf { it.isNotBlank() } ?: app.packageName
+                            val kind = if (app.system) "System app" else "User app"
+                            val enabled = when (app.enabled) {
+                                "ENABLED" -> "Enabled"
+                                "DISABLED", "DISABLED_USER" -> "Disabled"
+                                else -> "Default state"
+                            }
+                            ListRow(title, subtitle = "$kind · $enabled · version code ${app.versionCode}")
+                            if (index != matchingApps.lastIndex) ListDivider()
+                        }
+                    }
+                }
+            }
+
             ListGroup(Modifier.padding(top = 16.dp)) {
                 // 0.3.3 D2: without the new home screen there is no dock to name; the row opens the reason.
                 // 0.4.7 (UX finding 8): installed but not in use says the TV's own is in use; and when the
