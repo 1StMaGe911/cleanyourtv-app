@@ -136,6 +136,22 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
             // 0.4.7 (StockHomeBack): the TV turned its own home screen back on, so Run Setup again is the way back.
             if (!tv.clean || tv.stockHomeBack) PrimaryButton(stringResource(R.string.manage_clean_again), { onIntent(ManageIntent.CleanAgain) }, Modifier.padding(top = 16.dp), guardObscured = false)
             else SecondaryButton(stringResource(R.string.manage_clean_again), { onIntent(ManageIntent.CleanAgain) }, Modifier.padding(top = 16.dp))
+
+            // Read-only diagnostics: no settings or apps on the TV are changed.
+            SecondaryButton("Check TV health", { onIntent(ManageIntent.CheckHealth) }, Modifier.padding(top = 8.dp))
+            if (state.healthLoading) LiveLine("Reading TV diagnostics…")
+            if (state.healthError) Banner("Could not read TV diagnostics. Check that the TV is connected by ADB and try again.", BannerTone.WARNING, Modifier.padding(top = 12.dp))
+            state.health?.let { health ->
+                SectionLabel("TV health")
+                val ram = if (health.totalRamMb != null && health.availableRamMb != null) "${health.availableRamMb} MB free / ${health.totalRamMb} MB" else "Not reported"
+                val storage = if (health.totalStorageMb != null && health.availableStorageMb != null) "${health.availableStorageMb} MB free / ${health.totalStorageMb} MB" else "Not reported"
+                val load = health.cpuLoadAverage?.let { "%.2f".format(java.util.Locale.ROOT, it) } ?: "Not reported"
+                val temperature = health.temperatureCelsius?.let { "%.1f °C".format(java.util.Locale.ROOT, it) } ?: "Not reported"
+                val route = when (health.hasDefaultRoute) { true -> "Available"; false -> "Missing"; null -> "Unknown" }
+                val internet = when (health.internetReachable) { true -> "Reachable"; false -> "Probe failed"; null -> "Unknown" }
+                Body("Overall score: ${health.score?.let { "$it/100" } ?: "Not enough data"}\nRAM: $ram\nStorage: $storage\nCPU load average: $load\nReported temperature: $temperature\nNetwork route: $route\nInternet test: $internet", Modifier.padding(top = 4.dp))
+                if (health.warnings.isNotEmpty()) Banner(health.warnings.joinToString("\n"), BannerTone.WARNING, Modifier.padding(top = 8.dp))
+            }
             // 0.3.2 B1: an unlisted TV (no exact profile) invites the person to help add it.
             // 0.4.7 (must 4): once its report was sent, the banner says when and that the issue is
             // where news comes; sending again stays one tap away.
