@@ -59,6 +59,20 @@ jobs:
           python3 -m unittest discover -s scripts/tests -p 'test_*.py' -v
           python3 scripts/check-redaction.py fixtures/
 
+      # Keep installable CI builds available on every successful main-branch run.
+      # The debug APK is debug-signed; the release APK remains unsigned by design.
+      - name: Upload APK and AAB builds
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: clean-your-tv-${{ github.sha }}
+          path: |
+            app/build/outputs/apk/full/debug/*.apk
+            app/build/outputs/apk/full/release/*.apk
+            app/build/outputs/bundle/playRelease/*.aab
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Reports
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
