@@ -137,7 +137,6 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
             if (!tv.clean || tv.stockHomeBack) PrimaryButton(stringResource(R.string.manage_clean_again), { onIntent(ManageIntent.CleanAgain) }, Modifier.padding(top = 16.dp), guardObscured = false)
             else SecondaryButton(stringResource(R.string.manage_clean_again), { onIntent(ManageIntent.CleanAgain) }, Modifier.padding(top = 16.dp))
 
-            {
                 // Read-only diagnostics: no settings or apps on the TV are changed.
                 SecondaryButton("Check TV health", { onIntent(ManageIntent.CheckHealth) }, Modifier.padding(top = 8.dp))
                 if (state.healthLoading) LiveLine("Reading TV diagnostics…")
@@ -154,7 +153,6 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                     if (health.warnings.isNotEmpty()) Banner(health.warnings.joinToString("\n"), BannerTone.WARNING, Modifier.padding(top = 8.dp))
                 }
     
-            }
             // 0.3.2 B1: an unlisted TV (no exact profile) invites the person to help add it.
             // 0.4.7 (must 4): once its report was sent, the banner says when and that the issue is
             // where news comes; sending again stays one tap away.
