@@ -289,7 +289,7 @@ class ManageMachine(
             state.copy(cards = event.cards, selected = selected, loading = false,
                 offline = cur != null && cur.debugging == DebugState.ON && cur.chip == ChipState.OFFLINE)
         }
-        is ManageIntent.Select -> state.copy(selected = event.tvId)
+        is ManageIntent.Select -> state.copy(selected = event.tvId, healthLoading = false, health = null, healthError = false)
         is Thumb -> state.copy(cards = state.cards.map { if (it.id == event.tvId && event.png != null) it.copy(thumbnail = event.png) else it })
         Reconnecting -> state.copy(reconnecting = true)
         is WizardHomeRead -> state.copy(cards = state.cards.map { if (it.id == event.tvId) it.copy(wizardHome = event.applies, stockHomeBack = event.stockBack) else it })
