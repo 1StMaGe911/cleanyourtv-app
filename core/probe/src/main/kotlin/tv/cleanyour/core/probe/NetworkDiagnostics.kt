@@ -1,5 +1,6 @@
 package tv.cleanyour.core.probe
 
+import tv.cleanyour.core.model.RawShell
 import tv.cleanyour.core.model.ShellLine
 import tv.cleanyour.core.session.ExecSpec
 import tv.cleanyour.core.session.RetryClass
@@ -71,6 +72,7 @@ object NetworkDiagnosticsParser {
  * address, then a hostname probe to distinguish DNS failure from general connectivity failure.
  * No settings, routes, or device state are changed.
  */
+@OptIn(RawShell::class)
 class AdbNetworkDiagnosticsReader {
     suspend fun read(session: TvSession): NetworkDiagnostics {
         val result = session.exec(
