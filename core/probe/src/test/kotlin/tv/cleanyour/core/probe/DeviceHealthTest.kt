@@ -37,7 +37,14 @@ $pingExit
         assertTrue(result.warnings.isEmpty())
     }
 
-    @Test fun doesNotTreatLanRouteAsDefaultRoute() {\n        val output = sample().replace("default via 192.0.2.1 dev wlan0", "192.0.2.0/24 dev wlan0")\n        val result = DeviceHealthParser.parse(output)\n        assertFalse(result.hasDefaultRoute == true)\n        assertTrue(result.internetReachable == true)\n    }\n\n    @Test fun warnsAboutLowMemoryStorageAndHeat() {
+    @Test fun doesNotTreatLanRouteAsDefaultRoute() {
+        val output = sample().replace("default via 192.0.2.1 dev wlan0", "192.0.2.0/24 dev wlan0")
+        val result = DeviceHealthParser.parse(output)
+        assertFalse(result.hasDefaultRoute == true)
+        assertTrue(result.internetReachable == true)
+    }
+
+    @Test fun warnsAboutLowMemoryStorageAndHeat() {
         val result = DeviceHealthParser.parse(sample(availableKb = 100_000, freeStorageKb = 100_000, temperature = "91000", pingExit = 1))
         assertTrue((result.score ?: 100) < 60)
         assertTrue(result.warnings.contains("Low available memory"))
