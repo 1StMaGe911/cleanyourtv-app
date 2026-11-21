@@ -144,14 +144,25 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                 if (state.healthError) Banner(stringResource(R.string.manage_health_error), BannerTone.WARNING, Modifier.padding(top = 12.dp))
                 state.health?.let { health ->
                     SectionLabel(stringResource(R.string.manage_health_title))
-                    val ram = if (health.totalRamMb != null && health.availableRamMb != null) "${health.availableRamMb} MB free / ${health.totalRamMb} MB" else stringResource(R.string.manage_health_not_reported)
+                    val ram = if (health.totalRamMb != null && health.availableRamMb != null) msg(R.string.manage_health_memory_value, "available" to health.availableRamMb, "total" to health.totalRamMb) else stringResource(R.string.manage_health_not_reported)
                     val storage = if (health.totalStorageMb != null && health.availableStorageMb != null) "${health.availableStorageMb} MB free / ${health.totalStorageMb} MB" else "Not reported"
-                    val load = health.cpuLoadAverage?.let { "%.2f".format(java.util.Locale.ROOT, it) } ?: "Not reported"
+                    val load = health.cpuLoadAverage?.let { "%.2f".format(java.util.Locale.ROOT, it) } ?: stringResource(R.string.manage_health_not_reported)
                     val temperature = health.temperatureCelsius?.let { "%.1f °C".format(java.util.Locale.ROOT, it) } ?: "Not reported"
                     val route = when (health.hasDefaultRoute) { true -> stringResource(R.string.manage_health_available); false -> stringResource(R.string.manage_health_missing); null -> stringResource(R.string.manage_health_unknown) }
                     val internet = when (health.internetReachable) { true -> stringResource(R.string.manage_health_reachable); false -> stringResource(R.string.manage_health_probe_failed); null -> stringResource(R.string.manage_health_unknown) }
                     Body(listOf(\n                        msg(R.string.manage_health_score, "value" to (health.score?.let { "$it/100" } ?: stringResource(R.string.manage_health_not_enough_data))),\n                        msg(R.string.manage_health_ram, "value" to ram),\n                        msg(R.string.manage_health_storage, "value" to storage),\n                        msg(R.string.manage_health_cpu, "value" to load),\n                        msg(R.string.manage_health_temperature, "value" to temperature),\n                        msg(R.string.manage_health_route, "value" to route),\n                        msg(R.string.manage_health_internet, "value" to internet),\n                    ).joinToString("\\n"), Modifier.padding(top = 4.dp))
-                    if (health.warnings.isNotEmpty()) Banner(health.warnings.joinToString("\n"), BannerTone.WARNING, Modifier.padding(top = 8.dp))
+                    if (health.warnings.isNotEmpty()) {
+                        val warningLabels = health.warnings.map { warning ->
+                            when (warning) {
+                                "Low available memory" -> stringResource(R.string.manage_health_warning_low_ram)
+                                "Low free storage" -> stringResource(R.string.manage_health_warning_low_storage)
+                                "High reported temperature" -> stringResource(R.string.manage_health_warning_high_temperature)
+                                "Internet probe failed" -> stringResource(R.string.manage_health_warning_no_internet)
+                                else -> warning
+                            }
+                        }
+                        Banner(warningLabels.joinToString("\n"), BannerTone.WARNING, Modifier.padding(top = 8.dp))
+                    }
                 }
             }
     

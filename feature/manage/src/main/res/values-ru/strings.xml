@@ -50,4 +50,10 @@
     <string name="manage_health_route">Маршрут сети: {value}</string>
     <string name="manage_health_internet">Проверка интернета: {value}</string>
 
+    <string name="manage_health_memory_value">Свободно {available} МБ из {total} МБ</string>
+    <string name="manage_health_storage_value">Свободно {available} МБ из {total} МБ</string>
+    <string name="manage_health_warning_low_ram">Мало свободной оперативной памяти</string>
+    <string name="manage_health_warning_low_storage">Мало свободного места</string>
+    <string name="manage_health_warning_high_temperature">Повышенная температура по данным телевизора</string>
+    <string name="manage_health_warning_no_internet">Проверка доступа в интернет не пройдена</string>
 </resources>

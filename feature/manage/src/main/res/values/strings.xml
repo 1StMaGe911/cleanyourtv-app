@@ -342,4 +342,10 @@
     <string name="manage_health_route">Network route: {value}</string>
     <string name="manage_health_internet">Internet test: {value}</string>
 
+    <string name="manage_health_memory_value">{available} MB free of {total} MB</string>
+    <string name="manage_health_storage_value">{available} MB free of {total} MB</string>
+    <string name="manage_health_warning_low_ram">Low available memory</string>
+    <string name="manage_health_warning_low_storage">Low free storage</string>
+    <string name="manage_health_warning_high_temperature">High reported temperature</string>
+    <string name="manage_health_warning_no_internet">Internet probe failed</string>
 </resources>
