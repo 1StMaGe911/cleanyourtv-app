@@ -66,7 +66,7 @@ object ProbeScripts {
         "${mark("meminfo")}; cat /proc/meminfo; ${mark("storage")}; df -k /data; " +
             "${mark("cpu")}; cat /proc/loadavg; ${mark("thermal")}; " +
             "for f in /sys/class/thermal/thermal_zone*/temp; do [ -r \"\$f\" ] && cat \"\$f\"; done; " +
-            "${mark("network")}; ip route 2>/dev/null | grep -m 1 '^default '; ping -c 1 -W 2 1.1.1.1 >/dev/null 2>&1; echo \$?"
+            "${mark("network")}; ip route 2>/dev/null | grep -m 1 '^default ' || echo '__cyt_no_default_route__'; ping -c 1 -W 2 1.1.1.1 >/dev/null 2>&1; echo \$?"
     )
     val SCREENSHOT = ShellLine("mkdir -p ${RemoteDir.TMP.path} && screencap -p ${RemoteDir.TMP.path}/$SCREEN_FILE")
     // Only the file goes, never the directory: the run takes thumbnails between steps, and an rmdir
