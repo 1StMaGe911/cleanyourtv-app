@@ -58,6 +58,8 @@ data class TvCard(
     val restarts: RestartTally? = null,
 )
 
+data class InstalledAppRow(val packageName: String, val label: String?, val system: Boolean, val enabled: String, val versionCode: Long)
+
 data class ManageState(
     val cards: List<TvCard> = emptyList(),
     val selected: TvId? = null,
@@ -70,6 +72,7 @@ data class ManageState(
     val healthLoading: Boolean = false,
     val health: tv.cleanyour.core.probe.DeviceHealth? = null,
     val healthError: Boolean = false,
+    val installedApps: List<InstalledAppRow> = emptyList(),
 ) {
     val current: TvCard? get() = cards.firstOrNull { it.id == selected } ?: cards.firstOrNull()
 }
@@ -106,6 +109,7 @@ class ManageMachine(
 ) : Machine<ManageState, ManageIntent, ManageEffect>(ManageState(selected = initial, addOns = d.store.addOns, healthEnabled = true), scope) {
 
     private data class Loaded(val cards: List<TvCard>)
+    private data class InventoryLoaded(val tvId: TvId, val apps: List<InstalledAppRow>)
     private data class Thumb(val tvId: TvId, val png: ByteArray?)
     private data class Reconnected(val ok: Boolean)
     private data object Reconnecting
@@ -176,6 +180,13 @@ class ManageMachine(
     // On a connect: the thumbnail, and the TV's Home read again (0.4.6, WizardHome), with its boot (0.4.8, Restarts).
     private suspend fun connected() {
         keepHold()
+        val inventoryTv = state.value.current?.id
+        if (inventoryTv != null) {
+            val apps = attempt { d.snapshots.latest(inventoryTv) }.getOrNull()?.packages.orEmpty().entries
+                .map { (pkg, info) -> InstalledAppRow(pkg.value, info.label, info.system, info.enabled.name, info.versionCode) }
+                .sortedBy { (it.label ?: it.packageName).lowercase() }
+            send(InventoryLoaded(inventoryTv, apps))
+        }
         thumbnail()
         checkWizardHome()
     }
@@ -291,6 +302,7 @@ class ManageMachine(
                 offline = cur != null && cur.debugging == DebugState.ON && cur.chip == ChipState.OFFLINE)
         }
         is ManageIntent.Select -> state.copy(selected = event.tvId, healthLoading = false, health = null, healthError = false)
+        is InventoryLoaded -> if (state.current?.id == event.tvId) state.copy(installedApps = event.apps) else state
         is Thumb -> state.copy(cards = state.cards.map { if (it.id == event.tvId && event.png != null) it.copy(thumbnail = event.png) else it })
         Reconnecting -> state.copy(reconnecting = true)
         is WizardHomeRead -> state.copy(cards = state.cards.map { if (it.id == event.tvId) it.copy(wizardHome = event.applies, stockHomeBack = event.stockBack) else it })
