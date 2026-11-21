@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<!-- Russian strings are being translated incrementally; keep untranslated source strings as English for now. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="manage_apps_title">Установленные приложения</string>
     <string name="manage_apps_empty">Последнее сканирование телевизора не обнаружило приложений.</string>
     <string name="manage_apps_count">Установленные приложения (%1$d)</string>
