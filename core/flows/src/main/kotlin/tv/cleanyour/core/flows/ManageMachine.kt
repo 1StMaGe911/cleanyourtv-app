@@ -66,6 +66,7 @@ data class ManageState(
     val loading: Boolean = true,
     val addOns: Boolean = true,       // STORES-PLAN 1: the "Cards and modules" row (off in the Play build)
     val switchingHome: Boolean = false,   // 0.4.6: the wizard Home row's "Switch it back on" is running
+    val healthEnabled: Boolean = false,
     val healthLoading: Boolean = false,
     val health: tv.cleanyour.core.probe.DeviceHealth? = null,
     val healthError: Boolean = false,
@@ -102,7 +103,7 @@ class ManageMachine(
     private val d: ManageDeps,
     scope: CoroutineScope,
     initial: TvId? = null,
-) : Machine<ManageState, ManageIntent, ManageEffect>(ManageState(selected = initial, addOns = d.store.addOns), scope) {
+) : Machine<ManageState, ManageIntent, ManageEffect>(ManageState(selected = initial, addOns = d.store.addOns, healthEnabled = true), scope) {
 
     private data class Loaded(val cards: List<TvCard>)
     private data class Thumb(val tvId: TvId, val png: ByteArray?)
