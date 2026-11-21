@@ -181,7 +181,11 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                 )
                 if (state.switchingHome) LiveLine(stringResource(R.string.manage_wizard_home_working))
             }
-            if (state.installedApps.isNotEmpty()) {
+            if (state.inventoryLoaded) {
+                if (state.installedApps.isEmpty()) {
+                    SectionLabel("Installed apps")
+                    Body("No apps were returned by the latest TV scan.", Modifier.padding(top = 4.dp))
+                } else {
                 var appQuery by rememberSaveable(tv.id.value) { mutableStateOf("") }
                 var appSortDescending by rememberSaveable(tv.id.value) { mutableStateOf(false) }
                 var appFilter by rememberSaveable(tv.id.value) { mutableStateOf("ALL") }
@@ -248,9 +252,8 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                         }
                     }
                 }
-            }
-
-            ListGroup(Modifier.padding(top = 16.dp)) {
+                }
+            }(top = 16.dp)) {
                 // 0.3.3 D2: without the new home screen there is no dock to name; the row opens the reason.
                 // 0.4.7 (UX finding 8): installed but not in use says the TV's own is in use; and when the
                 // TV turned its own back on behind this app (StockHomeBack), the row says that.
