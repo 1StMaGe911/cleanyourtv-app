@@ -159,7 +159,7 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                         msg(R.string.manage_network_loss, "value" to loss),
                         msg(R.string.manage_network_latency, "value" to latency),
                     ).joinToString("\n"), Modifier.padding(top = 4.dp))
-                    Caption(stringResource(R.string.manage_network_caveat), Modifier.padding(top = 4.dp))
+                    Body(stringResource(R.string.manage_network_caveat), Modifier.padding(top = 4.dp))
                 }
                 state.health?.let { health ->
                     SectionLabel(stringResource(R.string.manage_health_title))
