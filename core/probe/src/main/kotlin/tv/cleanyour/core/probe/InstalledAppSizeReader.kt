@@ -26,7 +26,7 @@ object InstalledAppSizeParser {
     fun parse(stdout: String, exit: Int = 0, truncated: Boolean = false): Long? {
         if (truncated || exit != 0) return null
         val sizes = stdout.lineSequence().map(String::trim)
-            .filter { it.matches(Regex("^[0-9]{1,15}$")) }
+            .filter { it.matches(Regex("^[0-9]+$")) }
             .mapNotNull(String::toLongOrNull)
             .toList()
         if (sizes.isEmpty()) return null
