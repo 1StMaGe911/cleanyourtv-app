@@ -45,7 +45,7 @@ $pingExit
     }
 
     @Test fun unsupportedRouteProbeRemainsUnknown() {
-        val output = sample().replace("default via 192.0.2.1 dev wlan0", "")
+        val output = sample().replace("default via 192.0.2.1 dev wlan0", "__cyt_route_probe_unsupported__")
         val result = DeviceHealthParser.parse(output)
         assertNull(result.hasDefaultRoute)
     }
