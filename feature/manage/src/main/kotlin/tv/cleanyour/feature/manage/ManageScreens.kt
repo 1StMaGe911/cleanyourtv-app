@@ -228,9 +228,28 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                         "DISABLED", "DISABLED_USER" -> "Disabled"
                         else -> "Default state"
                     }
+                    val appSizeLabel = when {
+                        state.appSizePackage != app.packageName -> null
+                        state.appSizeLoading -> "APK size: checking…"
+                        state.appSizeError -> "APK size: unavailable"
+                        state.appSizeBytes != null -> {
+                            val bytes = state.appSizeBytes
+                            if (bytes >= 1024L * 1024L) "APK size: ${"%.1f".format(bytes / (1024.0 * 1024.0))} MB"
+                            else "APK size: ${((bytes + 1023L) / 1024L)} KB"
+                        }
+                        else -> null
+                    }
+                    val appDetails = listOfNotNull(
+                        appTitle,
+                        "Package: ${app.packageName}",
+                        "Type: $appKind",
+                        "Status: $appEnabled",
+                        "Version code: ${app.versionCode}",
+                        appSizeLabel,
+                    ).joinToString("\n")
                     ListGroup(Modifier.padding(top = 8.dp)) {
                         SectionLabel("App details")
-                        Body("$appTitle\nPackage: ${app.packageName}\nType: $appKind\nStatus: $appEnabled\nVersion code: ${app.versionCode}", Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                        Body(appDetails, Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
                         LinkRow("Close details", { selectedAppPackage = null }, chevron = false)
                     }
                 }
@@ -247,7 +266,7 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                                 else -> "Default state"
                             }
                             ListRow(title, subtitle = "$kind · $enabled · version code ${app.versionCode}",
-                                onClick = { selectedAppPackage = app.packageName })
+                                onClick = { selectedAppPackage = app.packageName; onIntent(ManageIntent.ReadAppSize(app.packageName)) })
                             if (index != matchingApps.lastIndex) ListDivider()
                         }
                     }
