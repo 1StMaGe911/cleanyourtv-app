@@ -79,4 +79,8 @@
     <string name="manage_startup_empty">Список пуст. Это не доказывает, что приложения не запускаются автоматически.</string>
     <string name="manage_startup_boot">После загрузки</string>
     <string name="manage_startup_locked">До разблокировки</string>
+    <string name="manage_startup_filter_all">Все</string>
+    <string name="manage_startup_filter_boot">После загрузки</string>
+    <string name="manage_startup_filter_locked">До разблокировки</string>
+    <string name="manage_startup_filter_empty">В этой категории компонентов нет.</string>
 </resources>

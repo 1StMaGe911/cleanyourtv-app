@@ -167,11 +167,44 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                     if (inventory.receivers.isEmpty()) {
                         Body(stringResource(R.string.manage_startup_empty), Modifier.padding(top = 4.dp))
                     } else {
-                        val lockedLabel = stringResource(R.string.manage_startup_locked)
-                        val bootLabel = stringResource(R.string.manage_startup_boot)
-                        Body(inventory.receivers.joinToString("\n") { receiver ->
-                            "${receiver.packageName} · ${if (receiver.lockedBoot) lockedLabel else bootLabel}\n${receiver.component}"
-                        }, Modifier.padding(top = 4.dp))
+                        var startupFilter by rememberSaveable(tv.id.value) { mutableStateOf("ALL") }
+                        var startupSortDescending by rememberSaveable(tv.id.value) { mutableStateOf(false) }
+                        val allCount = inventory.receivers.size
+                        val bootCount = inventory.receivers.count { !it.lockedBoot }
+                        val lockedCount = inventory.receivers.count { it.lockedBoot }
+                        val visibleReceivers = inventory.receivers.filter { receiver ->
+                            when (startupFilter) {
+                                "BOOT" -> !receiver.lockedBoot
+                                "LOCKED" -> receiver.lockedBoot
+                                else -> true
+                            }
+                        }.let { receivers ->
+                            if (startupSortDescending) receivers.sortedByDescending { it.packageName.lowercase() }
+                            else receivers.sortedBy { it.packageName.lowercase() }
+                        }
+                        ChoiceList(
+                            listOf(
+                                ChoiceOption("ALL", stringResource(R.string.manage_startup_filter_all), stringResource(R.string.manage_apps_count_short, allCount), icon = null),
+                                ChoiceOption("BOOT", stringResource(R.string.manage_startup_filter_boot), stringResource(R.string.manage_apps_count_short, bootCount), icon = null),
+                                ChoiceOption("LOCKED", stringResource(R.string.manage_startup_filter_locked), stringResource(R.string.manage_apps_count_short, lockedCount), icon = null),
+                            ),
+                            startupFilter,
+                            { startupFilter = it.key },
+                            Modifier.padding(top = 10.dp),
+                        )
+                        TertiaryButton(
+                            stringResource(if (startupSortDescending) R.string.manage_apps_sort_za else R.string.manage_apps_sort_az),
+                            { startupSortDescending = !startupSortDescending },
+                        )
+                        if (visibleReceivers.isEmpty()) {
+                            Body(stringResource(R.string.manage_startup_filter_empty), Modifier.padding(top = 4.dp))
+                        } else {
+                            val lockedLabel = stringResource(R.string.manage_startup_locked)
+                            val bootLabel = stringResource(R.string.manage_startup_boot)
+                            Body(visibleReceivers.joinToString("\n") { receiver ->
+                                "${receiver.packageName} · ${if (receiver.lockedBoot) lockedLabel else bootLabel}\n${receiver.component}"
+                            }, Modifier.padding(top = 4.dp))
+                        }
                     }
                 }
                 state.networkDiagnostics?.let { network ->

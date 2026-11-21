@@ -370,4 +370,8 @@
     <string name="manage_startup_empty">No receiver entries were returned. This does not prove that no apps start automatically.</string>
     <string name="manage_startup_boot">After boot</string>
     <string name="manage_startup_locked">Before unlock</string>
+    <string name="manage_startup_filter_all">All</string>
+    <string name="manage_startup_filter_boot">After boot</string>
+    <string name="manage_startup_filter_locked">Before unlock</string>
+    <string name="manage_startup_filter_empty">No receivers match this filter.</string>
 </resources>
