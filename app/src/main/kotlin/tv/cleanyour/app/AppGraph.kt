@@ -62,6 +62,7 @@ import tv.cleanyour.core.flows.SwitchedOffMachine
 import tv.cleanyour.core.flows.TvAccess
 import tv.cleanyour.core.flows.TvSettingsMachine
 import tv.cleanyour.core.model.TvId
+import tv.cleanyour.core.model.Endpoint
 import tv.cleanyour.core.ops.ConfigTransport
 import tv.cleanyour.core.ops.OpRenderer
 import tv.cleanyour.core.ops.ShellRenderer
@@ -116,7 +117,11 @@ class AppGraph(context: Context, val appVersion: String = versionOf(context), va
     val keyInfo = SignerKeyInfo(signer)
     // ADB STARTTLS: CNXN runs over TCP; the socket upgrades only after the TV sends STLS.
     val wirelessAdbTransport = WirelessAdbSocketFactory(app)
-    val sessions = AdbSessionManager(wirelessAdbTransport, signer, tls = wirelessAdbTransport, clock = clock, scope = workScope, log = { CytLog.i(it) })
+    val sessions = AdbSessionManager(
+        wirelessAdbTransport, signer, tls = wirelessAdbTransport, clock = clock, scope = workScope,
+        log = { CytLog.i(it) },
+        signerForEndpoint = { endpoint -> if (endpoint is Endpoint.Tls) WirelessAdbPairing.adbSigner(app) else signer },
+    )
 
     // W4: the probe and the bundled tables.
     // An installed APK that hashes to a pinned one has that pin's signer, so it is not copied to read it
