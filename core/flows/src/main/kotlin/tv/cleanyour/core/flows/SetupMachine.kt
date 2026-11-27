@@ -414,6 +414,20 @@ class SetupMachine(
         }
         is SetupIntent.EnterAddress -> if (isHomeAddress(event.ip) && (state is SetupState.Welcome || state is SetupState.Picker || state is SetupState.OpenDoor || state is SetupState.PairingNeeded))
             door(manualTv(event.ip.trim())) else state
+        // The pairing UI completed SPAKE2 on the TV. Skip the classic 5555 probe:
+        // the session transport now routes this host to its saved TLS connect port.
+        SetupIntent.PairingCompleted -> if (state is SetupState.PairingNeeded) {
+            val pairedTv = state.tv
+            SetupState.OpenDoor(
+                pairedTv.copy(port5555Open = true),
+                Families.of(pairedTv),
+                step = 2,
+                phase = DoorPhase.CONNECTING,
+                fingerprint = null,
+                banner = bannerFor(Families.of(pairedTv), pairedTv),
+                waitedMs = 0,
+            )
+        } else state
         // A family name as it is, a brand chip through Families.ofBrand. The TCL chip asks about the
         // menus first (TCL_ASK, no banner); the answer comes back as TCL_GLOBAL or TCL, and only
         // TCL (China-market firmware) gets the banner about the home screen.
