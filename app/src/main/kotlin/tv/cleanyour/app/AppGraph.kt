@@ -17,6 +17,7 @@ import tv.cleanyour.android.platform.KeystoreAdbSigner
 import tv.cleanyour.android.platform.NsdDiscovery
 import tv.cleanyour.core.flows.SharedDiscovery
 import tv.cleanyour.android.platform.PackageManagerApkInspector
+import ru.tvapk.installer.WirelessAdbPairing
 import ru.tvapk.installer.WirelessAdbSocketFactory
 import tv.cleanyour.core.backup.DefaultTvRestoreFiles
 import tv.cleanyour.core.backup.DocumentSnapshotStore
@@ -215,6 +216,7 @@ class AppGraph(context: Context, val appVersion: String = versionOf(context), va
         documents = documents,     // 0.4.0: the person's photo for the look step (OwnPicture)
         wrongFocus = { tvId -> wrongFocus.remove(tvId) },                 // issue #629
         restarts = restarts,       // 0.4.8
+        endpointForTv = { tv -> WirelessAdbPairing.endpointForTv(app, tv) },
     )
 
     val manageDeps = ManageDeps(
