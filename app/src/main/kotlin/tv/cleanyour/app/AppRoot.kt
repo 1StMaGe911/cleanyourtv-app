@@ -57,6 +57,8 @@ import tv.cleanyour.core.flows.tvIdOrNull
 import tv.cleanyour.core.flows.ReportContext
 import tv.cleanyour.core.flows.SetupEffect
 import tv.cleanyour.core.flows.SetupStart
+import tv.cleanyour.core.flows.SetupIntent
+import ru.tvapk.installer.WirelessAdbPairing
 import tv.cleanyour.core.flows.SetupState
 import tv.cleanyour.core.flows.SnackKind
 import tv.cleanyour.core.flows.StartDestination
@@ -285,7 +287,15 @@ fun AppRoot(graph: AppGraph, start: Dest, onExit: () -> Unit) {
                     LaunchedEffect(m) { m.effects.collect { onSetupEffect(it) } }
                     BackHandler { if (!m.back()) { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) else onExit() } }
                     SecureWindow((state as? SetupState.OpenDoor)?.phase == DoorPhase.ALLOW)
-                    if (isConnectState(state)) ConnectFlow(state, extras, m, onReturning = { go("returning") }, onCopyError = { copyText(context, it, "error") })
+                    if (isConnectState(state)) ConnectFlow(
+                        state, extras, m,
+                        onReturning = { go("returning") },
+                        onCopyError = { copyText(context, it, "error") },
+                        onPairing = { code, port ->
+                            WirelessAdbPairing.pair(context, state.tv, code, port)
+                            m.intent(SetupIntent.PairingCompleted)
+                        },
+                    )
                     else SetupFlow(state, extras, m, onCopyCommands = { copyText(context, it) }, onRoute = { go(it) }, photos = photoPicker,
                         onOpenUrl = { url -> scope.launch { onManageEffect(ManageEffect.OpenUrl(url)) } })
                 }
