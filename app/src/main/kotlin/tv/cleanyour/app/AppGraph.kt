@@ -17,7 +17,7 @@ import tv.cleanyour.android.platform.KeystoreAdbSigner
 import tv.cleanyour.android.platform.NsdDiscovery
 import tv.cleanyour.core.flows.SharedDiscovery
 import tv.cleanyour.android.platform.PackageManagerApkInspector
-import tv.cleanyour.android.platform.PlainSocketFactory
+import ru.tvapk.installer.WirelessAdbSocketFactory
 import tv.cleanyour.core.backup.DefaultTvRestoreFiles
 import tv.cleanyour.core.backup.DocumentSnapshotStore
 import tv.cleanyour.core.backup.PlainRestoreNote
@@ -113,7 +113,10 @@ class AppGraph(context: Context, val appVersion: String = versionOf(context), va
     // W2: the phone's ADB key and the sessions (RFC-W2-3; plain TCP, no TLS in 0.1).
     val signer = DeferredAdbSigner(workScope) { KeystoreAdbSigner.create(app) }
     val keyInfo = SignerKeyInfo(signer)
-    val sessions = AdbSessionManager(PlainSocketFactory(), signer, tls = null, clock = clock, scope = workScope, log = { CytLog.i(it) })
+    // Wireless Debugging uses ADB STARTTLS: the transport sends CNXN over TCP,
+    // then upgrades the same socket only after adbd responds with STLS.
+    val wirelessAdbTransport = WirelessAdbSocketFactory(app)
+    val sessions = AdbSessionManager(wirelessAdbTransport, signer, tls = wirelessAdbTransport, clock = clock, scope = workScope, log = { CytLog.i(it) })
 
     // W4: the probe and the bundled tables.
     // An installed APK that hashes to a pinned one has that pin's signer, so it is not copied to read it
