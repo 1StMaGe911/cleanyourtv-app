@@ -273,6 +273,8 @@ class SetupDeps(
     val homeHelper: Boolean = tv.cleanyour.core.planner.HomeHelper.BUILD_ON,
     // 0.4.8: where the restarts are counted (Restarts); the app gives Manage the same one. Null counts none.
     val restarts: Restarts? = documents?.let { Restarts(it) },
+    // Android Wireless Debugging: non-null only for a host paired on this phone.
+    val endpointForTv: (FoundTv) -> Endpoint? = { null },
 )
 
 // The first-run wizard, screens S1 to S5 (PRODUCT-SPEC 4, UX 2 and 4). One machine per wizard run,
@@ -480,6 +482,11 @@ class SetupMachine(
     }
 
     private fun door(tv: FoundTv): SetupState {
+        val pairedEndpoint = deps.endpointForTv(tv)
+        if (pairedEndpoint is Endpoint.Tls) {
+            val family = Families.of(tv)
+            return SetupState.OpenDoor(tv, family, step = 2, phase = DoorPhase.CONNECTING, fingerprint = null, banner = bannerFor(family, tv), waitedMs = 0)
+        }
         val pairingOnly = (tv.pairingService != null || tv.connectService != null) && tv.port5555Open != true
         if (pairingOnly) return SetupState.PairingNeeded(tv)
         val family = Families.of(tv)
@@ -642,7 +649,7 @@ class SetupMachine(
             if ((state.value as? SetupState.OpenDoor)?.tv?.host?.isEmpty() == true) mutableExtras.update { it.copy(card = card(StopCase.TV_NOT_FOUND, null)) }
         }
 
-        val waitingForPort = s is SetupState.OpenDoor && s.tv.host.isNotEmpty() && s.phase == DoorPhase.STEPS && !blocked
+        val waitingForPort = s is SetupState.OpenDoor && s.tv.host.isNotEmpty() && s.phase == DoorPhase.STEPS && !blocked && deps.endpointForTv(s.tv) == null
         if (waitingForPort && pollJob?.isActive != true) {
             val host = (s as SetupState.OpenDoor).tv.host
             pollJob = scope.launch {
@@ -690,7 +697,8 @@ class SetupMachine(
         knownTv = known
         deps.log.line("setup: connect start (${if (known != null) "known TV" else "new TV"}, ${found.sources.joinToString("+") { it.name.lowercase() }.ifEmpty { "found" }})")
         val result = attempt {
-            deps.sessions.open(Endpoint.PlainTcp(found.host), known?.id) { fp -> allowShown = true; send(Ev.Allow(fp)) }
+            val endpoint = deps.endpointForTv(found) ?: Endpoint.PlainTcp(found.host)
+            deps.sessions.open(endpoint, known?.id) { fp -> allowShown = true; send(Ev.Allow(fp)) }
         }.getOrElse { e ->
             // Issues #325, #620: an exception the session did not type was logged as "unreachable",
             // the one word that sends the person to look at the phone's network. It is named for what
