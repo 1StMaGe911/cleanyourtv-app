@@ -65,6 +65,8 @@ import tv.cleanyour.core.flows.TvWriter
 import tv.cleanyour.core.model.PlanId
 import tv.cleanyour.core.model.TvId
 import tv.cleanyour.feature.backup.RestoreScreen
+import ru.tvapk.installer.WirelessAdbPairing
+import tv.cleanyour.core.flows.SetupIntent
 import tv.cleanyour.feature.connect.ConnectFlow
 import tv.cleanyour.feature.connect.isConnectState
 import tv.cleanyour.feature.launcher.HomeScreen
@@ -291,7 +293,16 @@ fun AppRoot(graph: AppGraph, start: Dest, onExit: () -> Unit) {
                     LaunchedEffect(m) { m.effects.collect { onSetupEffect(it) } }
                     BackHandler { if (!m.back()) { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) else onExit() } }
                     SecureWindow((state as? SetupState.OpenDoor)?.phase == DoorPhase.ALLOW)
-                    if (isConnectState(state)) ConnectFlow(state, extras, m, onReturning = { go("returning") }, onCopyError = { copyText(context, it, "error") })
+                    if (isConnectState(state)) ConnectFlow(
+                        state, extras, m,
+                        onReturning = { go("returning") },
+                        onCopyError = { copyText(context, it, "error") },
+                        onPairing = { code, port ->
+                            val pairingTv = (state as? SetupState.PairingNeeded)?.tv ?: error("Экран сопряжения уже закрыт")
+                            withContext(Dispatchers.IO) { WirelessAdbPairing.pair(context, pairingTv, code, port) }
+                            m.intent(SetupIntent.PairingCompleted)
+                        },
+                    )
                     else SetupFlow(state, extras, m, onCopyCommands = { copyText(context, it) }, onRoute = { go(it) }, photos = photoPicker,
                         onOpenUrl = { url -> scope.launch { onManageEffect(ManageEffect.OpenUrl(url)) } })
                 }
