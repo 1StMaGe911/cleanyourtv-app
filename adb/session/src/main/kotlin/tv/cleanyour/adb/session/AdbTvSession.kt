@@ -65,6 +65,7 @@ internal class Link(
     val onConnectFailure: (Throwable) -> Unit = {},
     // Issues #325, #620: a handshake or identity read that failed inside the app (HandshakeFailure).
     val onHandshakeFailure: (Throwable) -> Unit = {},
+    val signerForEndpoint: (Endpoint) -> AdbSigner = { signer },
 )
 
 // TvSession over :adb:wire (PRODUCT-SPEC 5.3, ARCHITECTURE 3): one call at a time, two clocks
@@ -205,7 +206,7 @@ class AdbTvSession internal constructor(
         }
         val conn = try {
             AdbConnection.open(
-                socket, link.signer, link.tls,
+                socket, link.signerForEndpoint(endpoint), link.tls,
                 onAwaitingAllow = { fp -> setState(ConnectionState.AwaitingAllow(clock.nowMs(), fp)); link.onAwaitingAllow(fp) },
                 firstAuthTimeoutMs = SessionConfig.FIRST_AUTH_TIMEOUT_MS,
             )
