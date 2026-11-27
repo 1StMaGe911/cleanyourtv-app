@@ -40,6 +40,8 @@ class AdbSessionManager(
     // 0.3.6: the redacting diagnostics log; it gets the exception class and errno reason of a failed
     // socket connect (ConnectFailure), never an address.
     private val log: (String) -> Unit = {},
+    // Wireless Debugging TLS and ADB AUTH must use the same paired RSA identity.
+    private val signerForEndpoint: (Endpoint) -> AdbSigner = { signer },
 ) : SessionManager {
     private val sessions = ConcurrentHashMap<TvId, AdbTvSession>()
     private val mutableStates = MutableStateFlow<Map<TvId, ConnectionState>>(emptyMap())
@@ -100,7 +102,7 @@ class AdbSessionManager(
         lastConnectFailure = null
         val conn = try {
             AdbConnection.open(
-                socket, signer, tls,
+                socket, signerForEndpoint(endpoint), tls,
                 onAwaitingAllow = { fp ->
                     if (expected != null) publish(expected, ConnectionState.AwaitingAllow(clock.nowMs(), fp))
                     onAwaitingAllow(fp)
@@ -130,7 +132,7 @@ class AdbSessionManager(
                 existing.adopt(conn, endpoint)
                 return@withLock OpenResult.Ok(existing)
             }
-            val session = AdbTvSession(identity, endpoint, conn, Link(socketFactory, signer, tls, onAwaitingAllow, ::noteConnectFailure, ::noteHandshakeFailure), clock, scope, ::publish, ::remove, blobIo)
+            val session = AdbTvSession(identity, endpoint, conn, Link(socketFactory, signer, tls, onAwaitingAllow, ::noteConnectFailure, ::noteHandshakeFailure, signerForEndpoint), clock, scope, ::publish, ::remove, blobIo)
             sessions[identity.tvId] = session
             publish(identity.tvId, session.state.value)
             OpenResult.Ok(session)
