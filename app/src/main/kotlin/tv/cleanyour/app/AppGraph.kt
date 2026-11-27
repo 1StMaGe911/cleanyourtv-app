@@ -17,7 +17,8 @@ import tv.cleanyour.android.platform.KeystoreAdbSigner
 import tv.cleanyour.android.platform.NsdDiscovery
 import tv.cleanyour.core.flows.SharedDiscovery
 import tv.cleanyour.android.platform.PackageManagerApkInspector
-import tv.cleanyour.android.platform.PlainSocketFactory
+import ru.tvapk.installer.WirelessAdbPairing
+import ru.tvapk.installer.WirelessAdbSocketFactory
 import tv.cleanyour.core.backup.DefaultTvRestoreFiles
 import tv.cleanyour.core.backup.DocumentSnapshotStore
 import tv.cleanyour.core.backup.PlainRestoreNote
@@ -113,7 +114,9 @@ class AppGraph(context: Context, val appVersion: String = versionOf(context), va
     // W2: the phone's ADB key and the sessions (RFC-W2-3; plain TCP, no TLS in 0.1).
     val signer = DeferredAdbSigner(workScope) { KeystoreAdbSigner.create(app) }
     val keyInfo = SignerKeyInfo(signer)
-    val sessions = AdbSessionManager(PlainSocketFactory(), signer, tls = null, clock = clock, scope = workScope, log = { CytLog.i(it) })
+    // ADB STARTTLS: CNXN runs over TCP; the socket upgrades only after the TV sends STLS.
+    val wirelessAdbTransport = WirelessAdbSocketFactory(app)
+    val sessions = AdbSessionManager(wirelessAdbTransport, signer, tls = wirelessAdbTransport, clock = clock, scope = workScope, log = { CytLog.i(it) })
 
     // W4: the probe and the bundled tables.
     // An installed APK that hashes to a pinned one has that pin's signer, so it is not copied to read it
@@ -212,6 +215,7 @@ class AppGraph(context: Context, val appVersion: String = versionOf(context), va
         documents = documents,     // 0.4.0: the person's photo for the look step (OwnPicture)
         wrongFocus = { tvId -> wrongFocus.remove(tvId) },                 // issue #629
         restarts = restarts,       // 0.4.8
+        endpointForTv = { tv -> WirelessAdbPairing.endpointForTv(app, tv) },
     )
 
     val manageDeps = ManageDeps(
