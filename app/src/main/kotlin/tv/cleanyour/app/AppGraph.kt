@@ -116,7 +116,7 @@ class AppGraph(context: Context, val appVersion: String = versionOf(context), va
     val signer = DeferredAdbSigner(workScope) { KeystoreAdbSigner.create(app) }
     val keyInfo = SignerKeyInfo(signer)
     // ADB STARTTLS: CNXN runs over TCP; the socket upgrades only after the TV sends STLS.
-    val wirelessAdbTransport = WirelessAdbSocketFactory(app)
+    private val wirelessAdbTransport = WirelessAdbSocketFactory(app)
     val sessions = AdbSessionManager(
         wirelessAdbTransport, signer, tls = wirelessAdbTransport, clock = clock, scope = workScope,
         log = { CytLog.i(it) },
