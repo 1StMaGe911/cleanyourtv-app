@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -27,12 +28,19 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.input.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import kotlinx.coroutines.launch
 import tv.cleanyour.core.discovery.DiscoverySource
 import tv.cleanyour.core.discovery.FoundTv
 import tv.cleanyour.core.flows.ChipState
@@ -92,12 +100,12 @@ fun isConnectState(state: SetupState): Boolean =
 
 
 @Composable
-fun ConnectFlow(state: SetupState, extras: SetupExtras, actions: SetupActions, onReturning: () -> Unit, modifier: Modifier = Modifier, onCopyError: (String) -> Unit = {}) {
+fun ConnectFlow(state: SetupState, extras: SetupExtras, actions: SetupActions, onReturning: () -> Unit, modifier: Modifier = Modifier, onCopyError: (String) -> Unit = {}, onPairing: suspend (String, Int) -> Unit = { _, _ -> }) {
     when (state) {
         is SetupState.Welcome -> WelcomeScreen(state, extras, actions, onReturning, modifier)
         is SetupState.Picker -> PickerScreen(state, extras, actions, modifier)
         is SetupState.OpenDoor -> DoorScreen(state, extras, actions, modifier, onCopyError)
-        is SetupState.PairingNeeded -> PairingScreen(state, extras, actions, modifier)
+        is SetupState.PairingNeeded -> PairingScreen(state, extras, actions, modifier, onPairing)
         else -> {}
     }
     if (extras.sheet == Sheet.ADDRESS) AddressSheet(extras.addressError, actions)
@@ -441,23 +449,79 @@ internal fun NotSeenContent(retries: Int, onAsk: () -> Unit) {
 
 // S2x: the 0.1 dead end for pairing-only TVs (D9).
 @Composable
-fun PairingScreen(state: SetupState.PairingNeeded, extras: SetupExtras, actions: SetupActions, modifier: Modifier = Modifier) {
-    var steps by rememberSaveable { mutableStateOf(false) }
-    ScreenScaffold(Glow.Tv, modifier, topBar = { CytTopBar(onBack = { actions.back() }) }) {
-        // "Show me" opens a sheet, "Back" goes back: neither acts on the TV, so neither is guarded.
-        // 0.4.6: "Report a problem" opens the GitHub form with how the TV was found (no TV read yet).
-        val title = stringResource(R.string.pairing_title)
-        StopCard(
-            title, stringResource(R.string.pairing_body), Modifier.padding(top = 20.dp),
-            primaryLabel = stringResource(R.string.pairing_show_steps), onPrimary = { steps = true },
-            secondaryLabel = stringResource(R.string.action_back), onSecondary = { actions.back() },
-            detailsLabel = stringResource(R.string.connect_report), onDetails = { actions.report(title) },
-            primaryGuarded = false,
-        )
-    }
-    if (steps) CytBottomSheet({ steps = false }) { PairingStepsContent() }
-}
+fun PairingScreen(
+    state: SetupState.PairingNeeded,
+    extras: SetupExtras,
+    actions: SetupActions,
+    modifier: Modifier = Modifier,
+    onPairing: suspend (String, Int) -> Unit = { _, _ -> },
+) {
+    var code by rememberSaveable { mutableStateOf("") }
+    var port by rememberSaveable { mutableStateOf(state.tv.connectService?.port?.toString().orEmpty()) }
+    var busy by rememberSaveable { mutableStateOf(false) }
+    var error by rememberSaveable { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
 
+    ScreenScaffold(Glow.Tv, modifier, topBar = { CytTopBar(onBack = { actions.back() }) }) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            ScreenTitle(stringResource(R.string.pairing_title))
+            Lead("Открой на телевизоре «Сопряжение устройства с помощью кода». Введи код с экрана ТВ и порт TLS-подключения.", Modifier.padding(top = 4.dp))
+            OutlinedTextField(
+                value = code,
+                onValueChange = { code = it.filter(Char::isDigit).take(6); error = null },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Код сопряжения (6 цифр)") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+            )
+            OutlinedTextField(
+                value = port,
+                onValueChange = { port = it.filter(Char::isDigit).take(5); error = null },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Порт подключения (TLS)") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+            Text(
+                "Это порт подключения, а не порт сопряжения. Если телевизор показывает другой порт после сопряжения, укажи именно его.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            error?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+            }
+            PrimaryButton(
+                if (busy) "Сопряжение…" else "Сопрячь и подключить",
+                onClick = {
+                    val parsedPort = port.toIntOrNull()
+                    when {
+                        busy -> Unit
+                        code.length != 6 -> error = "Введи шестизначный код с экрана телевизора"
+                        parsedPort == null || parsedPort !in 1..65535 -> error = "Укажи корректный порт подключения (1–65535)"
+                        else -> {
+                            busy = true
+                            error = null
+                            scope.launch {
+                                try {
+                                    onPairing(code, parsedPort)
+                                } catch (failure: Throwable) {
+                                    error = failure.message ?: "Не удалось выполнить сопряжение"
+                                } finally {
+                                    busy = false
+                                }
+                            }
+                        }
+                    }
+                },
+                Modifier.fillMaxWidth(),
+            )
+            TertiaryButton(stringResource(R.string.action_back), { actions.back() }, Modifier.padding(top = 4.dp))
+        }
+    }
+}
 @Composable
 internal fun PairingStepsContent() {
     SheetHeader(stringResource(R.string.pairing_steps_title))
