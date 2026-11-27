@@ -292,7 +292,8 @@ fun AppRoot(graph: AppGraph, start: Dest, onExit: () -> Unit) {
                         onReturning = { go("returning") },
                         onCopyError = { copyText(context, it, "error") },
                         onPairing = { code, port ->
-                            WirelessAdbPairing.pair(context, state.tv, code, port)
+                            val pairingTv = (state as? SetupState.PairingNeeded)?.tv ?: error("Экран сопряжения уже закрыт")
+                            WirelessAdbPairing.pair(context, pairingTv, code, port)
                             m.intent(SetupIntent.PairingCompleted)
                         },
                     )
