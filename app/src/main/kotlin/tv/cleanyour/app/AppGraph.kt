@@ -120,7 +120,7 @@ class AppGraph(context: Context, val appVersion: String = versionOf(context), va
     val sessions = AdbSessionManager(
         wirelessAdbTransport, signer, tls = wirelessAdbTransport, clock = clock, scope = workScope,
         log = { CytLog.i(it) },
-        signerForEndpoint = { endpoint -> if (endpoint is Endpoint.Tls) WirelessAdbPairing.adbSigner(app) else signer },
+        signerForEndpoint = { endpoint -> if (endpoint is Endpoint.Tls || WirelessAdbPairing.endpointForHost(app, endpoint.host) != null) WirelessAdbPairing.adbSigner(app) else signer },
     )
 
     // W4: the probe and the bundled tables.
