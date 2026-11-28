@@ -6,5 +6,4 @@
 # firmware and protect its Yandex TV services until a full package inventory and reboot test.
 # Parser anchor only; profile-meta.json leaves this package out and neverDisable protects it.
 
-# Identification anchor — not a cleanup suggestion
 com.yandex.android.advid
