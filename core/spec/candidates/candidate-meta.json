@@ -283,6 +283,50 @@
         }
       },
       "packages": {}
+    },
+    "leran-32sn4500": {
+      "match": {
+        "models": [
+          "32SN4500"
+        ],
+        "devices": [
+          "32SN4500.PT320AT02-5"
+        ],
+        "brand": "LERAN",
+        "sdkMin": 30,
+        "sdkMax": 30,
+        "fingerprintPrefix": "LERAN/32SN4500.PT320AT02-5/32SN4500.PT320AT02-5:11/"
+      },
+      "platform": "ANDROID_TV",
+      "stockLaunchers": [
+        "com.yandex.tv.home"
+      ],
+      "liveTv": null,
+      "setupWraith": null,
+      "quirks": [],
+      "neverDisable": [
+        "com.yandex.android.advid",
+        "com.yandex.tv.home",
+        "com.yandex.tv.settings",
+        "com.yandex.tv.services",
+        "com.yandex.tv.services.platform",
+        "com.yandex.tv.services.privileged",
+        "com.yandex.tv.setupwizard",
+        "com.yandex.tv.alice"
+      ],
+      "suggestedDock": [],
+      "tested": {
+        "by": "Drafted from owner-provided LERAN 32SN4500 report; not reboot-tested",
+        "firmware": "4324037039",
+        "daysLivedWith": null,
+        "rebootTested": false,
+        "candidate": true
+      },
+      "groups": {},
+      "packages": {},
+      "leftOut": {
+        "com.yandex.android.advid": "Keep protected; included only as a parser anchor, not a cleanup suggestion."
+      }
     }
   }
 }
