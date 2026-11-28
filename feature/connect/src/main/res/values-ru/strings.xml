@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="welcome_overline" translatable="false">Clean Your TV</string>
     <string name="action_back">Назад</string><string name="action_cancel">Отмена</string><string name="action_ok">ОК</string>
     <string name="welcome_title">Порядок на вашем телевизоре.</string>
     <string name="welcome_body">Отключите лишнее, оставьте нужные приложения и получите удобный главный экран. Всего пять минут. Всё можно вернуть обратно.</string>
