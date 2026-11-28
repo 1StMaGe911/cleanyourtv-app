@@ -322,7 +322,12 @@
         "rebootTested": false,
         "candidate": true
       },
-      "groups": {},
+      "groups": {
+        "": {
+          "category": "tracking",
+          "ask": false
+        }
+      },
       "packages": {},
       "leftOut": {
         "com.yandex.android.advid": "Keep protected; included only as a parser anchor, not a cleanup suggestion."
