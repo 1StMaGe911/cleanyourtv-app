@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Clean Your TV</string>
+    <string name="caption">Clean Your TV</string>
+    <string name="hint">Не выключайте телевизор. Подробности отображаются на телефоне.</string>
+    <string name="chip">Точка восстановления</string>
+    <string name="all_clean">Очистка завершена.</string>
+    <string name="stage_scan">Сохраняем точку восстановления...</string>
+    <string name="stage_restore_saved">Точка восстановления сохранена</string>
+    <string name="stage_off">Отключаем компоненты: %1$d из %2$d...</string>
+    <string name="stage_off_group">%1$s: %2$d из %3$d...</string>
+    <string name="stage_group_done">Отключено: %1$d</string>
+    <string name="stage_group_done_group">%1$s отключено (%2$d)</string>
+    <string name="stage_install">Устанавливаем новый главный экран</string>
+    <string name="stage_installed">Новый главный экран установлен</string>
+    <string name="stage_finale">Переключаем главный экран</string>
+    <string name="group_adverts">Реклама</string>
+    <string name="group_tracking">Отслеживание</string>
+    <string name="group_nobody">Ненужные приложения</string>
+    <string name="group_brand">%1$s: дополнительные приложения</string>
+    <string name="group_brand_unknown">Приложения производителя</string>
+    <string name="group_shop">Магазин и деморежим</string>
+    <string name="group_other">Другие приложения</string>
+</resources>
