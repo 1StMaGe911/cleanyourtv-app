@@ -1,0 +1,10 @@
+# DRAFT, NOT TESTED. LERAN 32SN4500, Android 11 (API 30).
+# Device: 32SN4500.PT320AT02-5
+# Fingerprint: LERAN/32SN4500.PT320AT02-5/32SN4500.PT320AT02-5:11/RP1A.200720.011/4324037039:user/dev-keys
+# Stock Home: com.yandex.tv.home/.HomeActivity
+# This candidate intentionally contains no cleanup actions. It exists to identify the exact
+# firmware and protect its Yandex TV services until a full package inventory and reboot test.
+# Parser anchor only; profile-meta.json leaves this package out and neverDisable protects it.
+
+# Identification anchor — not a cleanup suggestion
+com.yandex.android.advid
