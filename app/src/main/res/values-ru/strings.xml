@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_channel_setup_name">Настройка телевизора</string>
+    <string name="app_channel_setup_description">Показывает ход настройки телевизора с телефона и подсказывает, когда нужно посмотреть на экран ТВ.</string>
+    <string name="app_restore_read_failed">Не удалось прочитать точку восстановления</string>
+</resources>
